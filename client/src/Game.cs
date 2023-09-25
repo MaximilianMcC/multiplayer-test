@@ -9,6 +9,7 @@ class Game
 	public static float DeltaTime;
 
 	// Game objects
+	public static List<Player> players;
 
 	public void Run(string ip, string port)
 	{
@@ -17,6 +18,20 @@ class Game
 		Window.SetFramerateLimit(60);
 		Window.Closed += (sender, e) => Window.Close();
 		Clock deltaTimeClock = new Clock();
+
+
+
+		// Connect to the server
+		Network.ConnectToServer(ip, port);
+
+
+
+		// Make the list of players in the game
+		// and add a local player
+		players = new List<Player>();
+		players.Add(new LocalPlayer());
+
+
 
 		// Main game loop
 		while (Window.IsOpen)
@@ -35,15 +50,24 @@ class Game
 		}
 	}
 
-
+	
+	// Update the game logic for everything
 	private void Update()
 	{
-
+		// Update the players
+		foreach (Player player in players)
+		{
+			player.Update();
+		}
 	}
 
-
+	// Draw everything
 	private void Render()
 	{
-
+		// Render the players
+		foreach (Player player in players)
+		{
+			player.Render();
+		}
 	}
 }
