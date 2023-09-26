@@ -47,7 +47,7 @@ class LocalPlayer : Player
 		Position = newPosition;
 
 		// Update the position on the server
-		Network.UpdatePlayerPacket(Uuid, Position, Color);
+		Network.UpdateLocalPlayerPacket(Uuid, Position, Color);
 	}
 
 }
