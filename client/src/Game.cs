@@ -48,6 +48,10 @@ class Game
 			Render();
 			Window.Display();
 		}
+
+
+		// End the game
+		Network.DisconnectFromServer();
 	}
 
 	

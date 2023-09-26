@@ -9,6 +9,8 @@ class Network
 	public static UdpClient Client;
 	public static IPEndPoint Server;
 
+
+	// Connect to the server
 	public static void ConnectToServer(string serverIp, string serverPort)
 	{
 		// Create a new client
@@ -19,6 +21,13 @@ class Network
 		int port = int.Parse(serverPort);
 		Server = new IPEndPoint(ip, port);
 	}
+
+	// Disconnect from the server
+	public static void DisconnectFromServer()
+	{
+		SendToServer("disconnect");
+	}
+
 
 
 	// Connect to the server
@@ -48,11 +57,9 @@ class Network
 
 	
 
-	
 
 
-
-	// Get data from the server
+	// Get decoded data from the server
 	private static string ReceiveFromServer()
 	{
 		// Get the message from the server
@@ -60,7 +67,6 @@ class Network
 
 		// Decode the message to a string
 		string message = Encoding.ASCII.GetString(data);
-		
 		return message;
 	}
 

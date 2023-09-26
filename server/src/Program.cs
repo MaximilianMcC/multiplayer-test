@@ -15,6 +15,7 @@ class Server
 		// Title crap
 		Console.Title = "UDP Server";
 		Console.CursorVisible = false;
+		Console.WriteLine($"Server is listening on port {args[0]}...\n");
 
 		// Parse the port from the args and create the UDP server
 		int port = int.Parse(args[0].Trim());
@@ -25,7 +26,6 @@ class Server
 		{
 			try
 			{
-				
 				// Get the client
 				IPEndPoint client = new IPEndPoint(IPAddress.Any, 0);
 				string packet;
@@ -62,11 +62,20 @@ class Server
 					continue;
 				}
 
-
-				// Update all of the players info on the server
+				// Get the current player
 				Player currentPlayer = connections[client];
-				currentPlayer.Update(packet);
 
+				// Check for if the current player wants to disconnect
+				if (packet == "disconnect")
+				{
+					// Remove the client from the list of clients
+					connections.Remove(client);
+					Console.WriteLine($"{currentPlayer.Uuid} disconnected");
+					continue;
+				}
+
+				// Update the player's info
+				currentPlayer.Update(packet);
 
 				// Add every players info into the packet for sending (including this current player)
 				packet = "";
@@ -94,6 +103,31 @@ class Server
 				Console.WriteLine("Exception!!!");
 				Console.WriteLine(error);
 			}
+
+
+
+			// Check for if any players disconnect
+			/*
+			Console.WriteLine(connections.Count);
+			foreach (IPEndPoint client in connections.Keys)
+			{
+				// Get the current player
+				Player currentPlayer = connections[client];
+				TimeSpan timeSinceLastPing = DateTime.Now - currentPlayer.LastPing;
+				Console.WriteLine($"Checking for if player {currentPlayer.Uuid} has disconnected. ({timeSinceLastPing} since last ping)");
+
+				// Check for if it's been more than 10 seconds since the player last
+				// send a packet and disconnect them (10 seconds because average lag is shorter)
+				// TODO: Make ping play a factor in how long the disconnect timeout is
+				if (timeSinceLastPing.TotalSeconds >= 10)
+				{
+					// Disconnect the player from the server
+					connections.Remove(client);
+					Console.WriteLine("Player disconnected!");
+				}
+			}
+			*/
+
 		}
 	}
 }
@@ -110,6 +144,7 @@ class Player
 	// Server and identity stuff
 	public IPEndPoint Ip { get; private set; }
 	public string Uuid { get; private set; }
+	public DateTime LastPing { get; set; }
 
 	// Player properties
 	public float XPosition { get; set; }
@@ -136,5 +171,9 @@ class Player
 		XPosition = float.Parse(data[1]);
 		YPosition = float.Parse(data[2]);
 		Color = uint.Parse(data[3]);
+
+		// Update the last time that we received a packet so we can
+		// detect for if they have disconnected
+		LastPing = DateTime.Now;
 	}
 }
