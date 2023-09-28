@@ -8,8 +8,8 @@ class Server
 	public static bool FancyUi = true;
 
 	// TODO: Don't use IP to identify players. Use UUID then multiple on same pc can join
-	private static UdpClient server;
-	private static Dictionary<IPEndPoint, Player> playerList = new Dictionary<IPEndPoint, Player>();
+	public static UdpClient UdpServer;
+	public static Dictionary<IPEndPoint, Player> PlayerList = new Dictionary<IPEndPoint, Player>();
 
 	public static void Main(string[] args)
 	{
@@ -21,7 +21,7 @@ class Server
 		int port = int.Parse(args[0]);
 
 		// Create the UDP server
-		server = new UdpClient(port);
+		UdpServer = new UdpClient(port);
 		try
 		{
 			Logger.Log($"Server listening on port {port}...");
@@ -30,41 +30,29 @@ class Server
 			{
 				// Get the currently connecting client and their data
 				IPEndPoint currentClient = new IPEndPoint(IPAddress.Any, 0);
-				byte[] receivedPacketBytes = server.Receive(ref currentClient);
+				byte[] receivedPacketBytes = UdpServer.Receive(ref currentClient);
 				string receivedPacket = Encoding.ASCII.GetString(receivedPacketBytes);
 
 				// Print the packet
 				Logger.LogPacket(receivedPacket, Logger.PacketLogType.OUTGOING);
 
-				// Get the packet type to determine what the client wants to do
+				// Get the packet type and check for if they want to connect
 				PacketType packetType = (PacketType)byte.Parse(receivedPacket.Split(',')[0]);
-
-				// Add them as a new player (connect)
 				if (packetType == PacketType.CONNECT)
 				{
 					// Parse the packet to get the color and username
 					string[] packetData = receivedPacket.Split(',');
-					uint color = uint.Parse(packetData[0]);
-					string username = packetData[1];
+					uint color = uint.Parse(packetData[1]);
+					string username = packetData[2];
 
 					// Create, then add the player to the player list
-					Player player = new Player(color, username);
-					playerList.Add(currentClient, player);
+					Player player = new Player(currentClient, color, username);
+					PlayerList.Add(currentClient, player);
 
 					// Start a new thread to handle the player
 					Thread handlePlayer = new Thread(player.Handle);
 					handlePlayer.Start();
 				}
-				
-				// Remove them from the player (disconnect)
-				if (packetType == PacketType.DISCONNECT)
-				{
-					// Remove the player from the list
-					// TODO: Put the message after
-					Logger.Log($"Disconnected player {playerList[currentClient].Uuid}");
-					playerList.Remove(currentClient);
-				}
-
 			}
 		}
 		catch(Exception e)
@@ -79,7 +67,7 @@ class Server
 		{
 			// TODO: Remove. This is never actually run.
 			// Close the UDP server
-			server.Close();
+			UdpServer.Close();
 			Console.WriteLine("Server shutdown.");
 		}
 	}

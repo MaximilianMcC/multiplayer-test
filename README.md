@@ -35,4 +35,4 @@ Packets are sent as ASCII strings and their information is split with a comma. I
 | 1     | Player UUID             | `"96c2cec8-bc70-4a7c-83d7-9d2e2ccd866d"` |
 | 2     | Player username         | `"Bob"`                                  |
 | 3     | Player X position       | `-456f`                                  |
-| 3     | Player Y position       | `158.7f`                                 |
+| 4     | Player Y position       | `158.7f`                                 |
