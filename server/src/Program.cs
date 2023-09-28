@@ -7,9 +7,9 @@ class Server
 	// Enable fancy UI or not (Might slow down server performance)
 	private static bool fancyUi = true;
 
-
+	// TODO: Don't use IP to identify players. Use UUID then multiple on same pc can join
 	private static UdpClient server;
-
+	private static Dictionary<IPEndPoint, Player> playerList = new Dictionary<IPEndPoint, Player>();
 
 	public static void Main(string[] args)
 	{
@@ -17,14 +17,14 @@ class Server
 		Console.CursorVisible = false;
 		Console.Title = "sererv";
 
-		// Get the server port from the args
+		// Get the server port from the launch arguments
 		int port = int.Parse(args[0]);
 
 		// Create the UDP server
 		server = new UdpClient(port);
 		try
 		{
-			Console.WriteLine($"UDP Sever listening on port {port}...\n");
+			Log($"Server listening on port {port}...");
 
 			while (true)
 			{
@@ -34,8 +34,34 @@ class Server
 				string receivedPacket = Encoding.ASCII.GetString(receivedPacketBytes);
 
 				// Print the packet
-				Log(receivedPacket, LogType.OUTGOING_PACKET);
+				LogPacket(receivedPacket, PacketLogType.OUTGOING);
 
+				// Get the packet type to determine what the client wants to do
+				PacketType packetType = (PacketType)byte.Parse(receivedPacket.Split(',')[0]);
+
+				// Add them as a new player (connect)
+				if (packetType == PacketType.CONNECT)
+				{
+					// Parse the packet to get the color and username
+					string[] packetData = receivedPacket.Split(',');
+					uint color = uint.Parse(packetData[0]);
+					string username = packetData[1];
+
+					// Create, then add the player to the player list
+					Player player = new Player(color, username);
+					playerList.Add(currentClient, player);
+
+					// TODO: Start a new thread to handle the player
+				}
+				
+				// Remove them from the player (disconnect)
+				if (packetType == PacketType.DISCONNECT)
+				{
+					// Remove the player from the list
+					// TODO: Put the message after
+					Log($"Disconnected player {playerList[currentClient].Uuid}");
+					playerList.Remove(currentClient);
+				}
 
 			}
 		}
@@ -71,24 +97,23 @@ class Server
 
 
 
-
-
-
-
-
-
+	// TODO: Make it so that every client/player gets x different lines allowed for them to clear up space and stuff.
 
 
 	enum LogType
 	{
 		INFO,
 		WARN,
-		ERROR,
-
-		INCOMING_PACKET,
-		OUTGOING_PACKET
+		ERROR
 	}
 
+	enum PacketLogType
+	{
+		INCOMING,
+		OUTGOING
+	}
+
+	// TODO: Chance the color of stuff in quotes, or numbers in a string to highlight important info
 	private static void Log(string content, LogType logType = LogType.INFO)
 	{
 		// Check for if we allow fancy UI
@@ -101,38 +126,50 @@ class Server
 		{
 			case LogType.INFO:
 				BoxedText("INFO", ConsoleColor.Blue);
-				StringText(content);
 				break;
 
 			case LogType.WARN:
 				BoxedText("WARN", ConsoleColor.Yellow);
-				StringText(content);
 				break;
 
 			case LogType.ERROR:
 				BoxedText("ERROR", ConsoleColor.Red);
-				StringText(content);
-				break;
-
-
-
-
-
-
-			case LogType.INCOMING_PACKET:
-				BoxedText("INCOMING", ConsoleColor.Magenta);
-				BoxedText($"{Encoding.ASCII.GetBytes(content).Length} bytes", ConsoleColor.DarkYellow);
-				StringText(content);
-				break;
-
-			case LogType.OUTGOING_PACKET:
-				BoxedText("OUTGOING", ConsoleColor.DarkCyan);
-				BoxedText($"{Encoding.ASCII.GetBytes(content).Length} bytes", ConsoleColor.DarkYellow);
-				StringText(content);
 				break;
 		}
 
-		Console.WriteLine();
+		// Print the content
+		Console.ForegroundColor = ConsoleColor.White;
+		Console.WriteLine(content);
+		Console.ResetColor();
+	}
+
+	// TODO: Also show IP
+	private static void LogPacket(string packet, PacketLogType packetType)
+	{
+		// Check for if we allow fancy UI
+		if (fancyUi == false) return;
+
+		// Timestamp
+		BoxedText(DateTime.Now.ToString("HH:mm:ss.fff"), ConsoleColor.Cyan);
+
+		switch (packetType)
+		{
+			case PacketLogType.INCOMING:
+				BoxedText("INCOMING", ConsoleColor.Magenta);
+				break;
+
+			case PacketLogType.OUTGOING:
+				BoxedText("OUTGOING", ConsoleColor.DarkCyan);
+				break;
+		}
+
+		// Bytes
+		BoxedText($"{Encoding.ASCII.GetBytes(packet).Length} bytes", ConsoleColor.DarkYellow);
+
+		// Print the packet
+		Console.ForegroundColor = ConsoleColor.Green;
+		Console.WriteLine($"\"{packet}\"");
+		Console.ResetColor();
 	}
 
 	private static void BoxedText(string text, ConsoleColor color)
@@ -145,11 +182,33 @@ class Server
 		Console.Write("] ");
 		Console.ResetColor();
 	}
+}
 
-	private static void StringText(string text)
+
+
+class Player
+{
+	// Player values
+	public string Uuid { get; private set; }
+	public string Username { get; private set; }
+	public uint Color { get; set; }
+	public float PositionX { get; set; }
+	public float PositionY { get; set; }
+
+	// Create a new player
+	public Player(uint color, string username)
 	{
-		Console.ForegroundColor = ConsoleColor.Green;
-		Console.Write($"\"{text}\"");
-		Console.ResetColor();
+		// Assign the starting values
+		Uuid = Guid.NewGuid().ToString();
+		Color = color;
+		Username = username;
 	}
+}
+
+public enum PacketType
+{
+	CONNECT = 1,
+	DISCONNECT = 2,
+
+	PLAYER_UPDATE = 3
 }
