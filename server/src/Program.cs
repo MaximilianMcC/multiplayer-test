@@ -5,7 +5,7 @@ using System.Text;
 class Server
 {
 	// Enable fancy UI or not (Might slow down server performance)
-	private static bool fancyUi = true;
+	public static bool FancyUi = true;
 
 	// TODO: Don't use IP to identify players. Use UUID then multiple on same pc can join
 	private static UdpClient server;
@@ -24,7 +24,7 @@ class Server
 		server = new UdpClient(port);
 		try
 		{
-			Log($"Server listening on port {port}...");
+			Logger.Log($"Server listening on port {port}...");
 
 			while (true)
 			{
@@ -34,7 +34,7 @@ class Server
 				string receivedPacket = Encoding.ASCII.GetString(receivedPacketBytes);
 
 				// Print the packet
-				LogPacket(receivedPacket, PacketLogType.OUTGOING);
+				Logger.LogPacket(receivedPacket, Logger.PacketLogType.OUTGOING);
 
 				// Get the packet type to determine what the client wants to do
 				PacketType packetType = (PacketType)byte.Parse(receivedPacket.Split(',')[0]);
@@ -51,7 +51,9 @@ class Server
 					Player player = new Player(color, username);
 					playerList.Add(currentClient, player);
 
-					// TODO: Start a new thread to handle the player
+					// Start a new thread to handle the player
+					Thread handlePlayer = new Thread(player.Handle);
+					handlePlayer.Start();
 				}
 				
 				// Remove them from the player (disconnect)
@@ -59,7 +61,7 @@ class Server
 				{
 					// Remove the player from the list
 					// TODO: Put the message after
-					Log($"Disconnected player {playerList[currentClient].Uuid}");
+					Logger.Log($"Disconnected player {playerList[currentClient].Uuid}");
 					playerList.Remove(currentClient);
 				}
 
@@ -80,128 +82,6 @@ class Server
 			server.Close();
 			Console.WriteLine("Server shutdown.");
 		}
-	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	// TODO: Make it so that every client/player gets x different lines allowed for them to clear up space and stuff.
-
-
-	enum LogType
-	{
-		INFO,
-		WARN,
-		ERROR
-	}
-
-	enum PacketLogType
-	{
-		INCOMING,
-		OUTGOING
-	}
-
-	// TODO: Chance the color of stuff in quotes, or numbers in a string to highlight important info
-	private static void Log(string content, LogType logType = LogType.INFO)
-	{
-		// Check for if we allow fancy UI
-		if (fancyUi == false) return;
-
-		// Timestamp
-		BoxedText(DateTime.Now.ToString("HH:mm:ss.fff"), ConsoleColor.Cyan);
-
-		switch (logType)
-		{
-			case LogType.INFO:
-				BoxedText("INFO", ConsoleColor.Blue);
-				break;
-
-			case LogType.WARN:
-				BoxedText("WARN", ConsoleColor.Yellow);
-				break;
-
-			case LogType.ERROR:
-				BoxedText("ERROR", ConsoleColor.Red);
-				break;
-		}
-
-		// Print the content
-		Console.ForegroundColor = ConsoleColor.White;
-		Console.WriteLine(content);
-		Console.ResetColor();
-	}
-
-	// TODO: Also show IP
-	private static void LogPacket(string packet, PacketLogType packetType)
-	{
-		// Check for if we allow fancy UI
-		if (fancyUi == false) return;
-
-		// Timestamp
-		BoxedText(DateTime.Now.ToString("HH:mm:ss.fff"), ConsoleColor.Cyan);
-
-		switch (packetType)
-		{
-			case PacketLogType.INCOMING:
-				BoxedText("INCOMING", ConsoleColor.Magenta);
-				break;
-
-			case PacketLogType.OUTGOING:
-				BoxedText("OUTGOING", ConsoleColor.DarkCyan);
-				break;
-		}
-
-		// Bytes
-		BoxedText($"{Encoding.ASCII.GetBytes(packet).Length} bytes", ConsoleColor.DarkYellow);
-
-		// Print the packet
-		Console.ForegroundColor = ConsoleColor.Green;
-		Console.WriteLine($"\"{packet}\"");
-		Console.ResetColor();
-	}
-
-	private static void BoxedText(string text, ConsoleColor color)
-	{
-		Console.ForegroundColor = ConsoleColor.Gray;
-		Console.Write('[');
-		Console.ForegroundColor = color;
-		Console.Write(text);
-		Console.ForegroundColor = ConsoleColor.Gray;
-		Console.Write("] ");
-		Console.ResetColor();
-	}
-}
-
-
-
-class Player
-{
-	// Player values
-	public string Uuid { get; private set; }
-	public string Username { get; private set; }
-	public uint Color { get; set; }
-	public float PositionX { get; set; }
-	public float PositionY { get; set; }
-
-	// Create a new player
-	public Player(uint color, string username)
-	{
-		// Assign the starting values
-		Uuid = Guid.NewGuid().ToString();
-		Color = color;
-		Username = username;
 	}
 }
 
