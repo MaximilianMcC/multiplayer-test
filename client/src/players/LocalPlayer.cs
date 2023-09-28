@@ -1,17 +1,13 @@
-using System.Runtime.InteropServices;
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
 
 class LocalPlayer : Player
 {
-	private float speed = 250f;
+	private float speed = 350f;
 
-	public LocalPlayer()
+	public LocalPlayer(string username)
 	{
-		// Get a UUID for the player		
-		Uuid = Network.RegisterPlayerOnServer();
-
 		// Generate a random color for the player
 		Random random = new Random();
 		Color = new Color((byte)random.Next(0, 255), (byte)random.Next(0, 255), (byte)random.Next(0, 255), 255);
@@ -19,6 +15,9 @@ class LocalPlayer : Player
 		// Make a sprite for the player using the random color
 		Sprite = new RectangleShape(new Vector2f(50, 50));
 		Sprite.FillColor = Color;
+
+		// Get a UUID for the player	
+		Uuid = Network.RegisterPlayer(Color, username);
 	}
 
     public override void Update()
@@ -46,8 +45,7 @@ class LocalPlayer : Player
 		// Move the player
 		Position = newPosition;
 
-		// Update the position on the server
-		Network.UpdateLocalPlayerPacket(Uuid, Position, Color);
+		// TODO: Update the position on the server
 	}
 
 }

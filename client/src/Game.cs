@@ -9,27 +9,22 @@ class Game
 	public static float DeltaTime;
 
 	// Game objects
-	public static List<Player> players;
+	public static List<Player> players = new List<Player>();
 
-	public void Run(string ip, string port)
+	// TODO: Don't include player username in here
+	public void Run(string ip, string port, string username)
 	{
 		// Create the SFML window
-		Window = new RenderWindow(new VideoMode(800, 600), "SFML UDP multiplayer client test (testing rn)");
+		Window = new RenderWindow(new VideoMode(800, 600), "gaem");
 		Window.SetFramerateLimit(60);
 		Window.Closed += (sender, e) => Exit();
 		Clock deltaTimeClock = new Clock();
 
-
-
 		// Connect to the server
 		Network.ConnectToServer(ip, port);
 
-
-
-		// Make the list of players in the game
-		// and add a local player
-		players = new List<Player>();
-		players.Add(new LocalPlayer());
+		// Create a local player for the current user to control
+		players.Add(new LocalPlayer(username));
 
 
 
@@ -59,10 +54,6 @@ class Game
 		{
 			player.Update();
 		}
-		
-		// Check for if new players join the game
-		Network.DetectNewPlayers();
-		Console.WriteLine($"Online players: {players.Count}");
 	}
 
 	// Draw everything
@@ -81,9 +72,5 @@ class Game
 	{
 		// Close the window
 		Window.Close();
-
-		// Disconnect from the server
-		// TODO: Fix this. Don't make it add player back
-		Network.DisconnectFromServer();
 	}
 }

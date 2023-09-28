@@ -17,9 +17,10 @@ class Player
 	public Player(IPEndPoint client, uint color, string username)
 	{
 		this.client = client;
+		Uuid = Guid.NewGuid().ToString();
+		Logger.Log($"New player joined the game. Assigned UUID {Uuid}");
 
 		// Assign the starting values
-		Uuid = Guid.NewGuid().ToString();
 		Color = color;
 		Username = username;
 	}
@@ -63,6 +64,7 @@ class Player
 				// Send the update packet to the player
 				byte[] outgoingPacketBytes = Encoding.ASCII.GetBytes(outgoingPacket);
 				Server.UdpServer.Send(outgoingPacketBytes, outgoingPacketBytes.Length, client);
+				Logger.LogPacket(outgoingPacket, Logger.PacketLogType.OUTGOING);
 			}
 			else if (packetType == PacketType.DISCONNECT)
 			{

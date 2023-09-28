@@ -34,12 +34,15 @@ class Server
 				string receivedPacket = Encoding.ASCII.GetString(receivedPacketBytes);
 
 				// Print the packet
-				Logger.LogPacket(receivedPacket, Logger.PacketLogType.OUTGOING);
+				Logger.LogPacket(receivedPacket, Logger.PacketLogType.INCOMING);
 
 				// Get the packet type and check for if they want to connect
-				PacketType packetType = (PacketType)byte.Parse(receivedPacket.Split(',')[0]);
+				PacketType packetType = (PacketType)int.Parse(receivedPacket.Split(',')[0]);
 				if (packetType == PacketType.CONNECT)
 				{
+					Logger.Log("connecting rn");
+
+					
 					// Parse the packet to get the color and username
 					string[] packetData = receivedPacket.Split(',');
 					uint color = uint.Parse(packetData[1]);
@@ -48,6 +51,13 @@ class Server
 					// Create, then add the player to the player list
 					Player player = new Player(currentClient, color, username);
 					PlayerList.Add(currentClient, player);
+
+					// Send back the players new UUID
+					// TODO: If Removing debug stuff them remove connectionPacket string because its useless here
+					string connectionPacket = player.Uuid;
+					byte[] connectionPacketBytes = Encoding.ASCII.GetBytes(connectionPacket);
+					UdpServer.Send(connectionPacketBytes, connectionPacketBytes.Length, currentClient);
+					Logger.LogPacket(connectionPacket, Logger.PacketLogType.OUTGOING);
 
 					// Start a new thread to handle the player
 					Thread handlePlayer = new Thread(player.Handle);
@@ -75,8 +85,8 @@ class Server
 
 public enum PacketType
 {
-	CONNECT = 1,
-	DISCONNECT = 2,
+	CONNECT = 0,
+	DISCONNECT = 1,
 
-	PLAYER_UPDATE = 3
+	PLAYER_UPDATE = 2
 }

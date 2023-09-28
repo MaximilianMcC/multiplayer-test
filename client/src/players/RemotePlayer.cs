@@ -23,13 +23,13 @@ class RemotePlayer : Player
     {
         base.Update();
 
-		// Get the players data
-		// TODO: Don't do this here. Do it in the Network class so only a single request needs to be made to the server
-		string packet = Network.UpdateRemotePlayer(Uuid);
-		string[] data = packet.Split(',');
+		// // Get the players data
+		// // TODO: Don't do this here. Do it in the Network class so only a single request needs to be made to the server
+		// string packet = Network.UpdateRemotePlayer(Uuid);
+		// string[] data = packet.Split(',');
 
-		// Update all of the players info
-		Position = new Vector2f(float.Parse(data[1]), float.Parse(data[2]));
-		Color = new Color(uint.Parse(data[3]));
+		// // Update all of the players info
+		// Position = new Vector2f(float.Parse(data[1]), float.Parse(data[2]));
+		// Color = new Color(uint.Parse(data[3]));
     }
 }
