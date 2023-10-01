@@ -9,7 +9,8 @@ class Game
 	public static float DeltaTime;
 
 	// Game objects
-	public static List<Player> players = new List<Player>();
+	public static List<RemotePlayer> RemotePlayers = new List<RemotePlayer>();
+	public static LocalPlayer LocalPlayer;
 
 	// TODO: Don't include player username in here
 	public void Run(string ip, string port, string username)
@@ -24,7 +25,7 @@ class Game
 		Network.ConnectToServer(ip, port);
 
 		// Create a local player for the current user to control
-		players.Add(new LocalPlayer(username));
+		LocalPlayer = new LocalPlayer(username);
 
 
 
@@ -50,20 +51,16 @@ class Game
 	private void Update()
 	{
 		// Update the players
-		foreach (Player player in players)
-		{
-			player.Update();
-		}
+		LocalPlayer.Update();
+		Network.UpdatePlayers();
 	}
 
 	// Draw everything
 	private void Render()
 	{
 		// Render the players
-		foreach (Player player in players)
-		{
-			player.Render();
-		}
+		LocalPlayer.Render();
+		foreach (Player player in RemotePlayers) player.Render();
 	}
 
 

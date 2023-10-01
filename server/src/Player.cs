@@ -44,6 +44,8 @@ class Player
 			// Check for what they want to do
 			if (packetType == PacketType.PLAYER_UPDATE)
 			{
+				Logger.Log($"Updating player {ToString()} rn");
+
 				// Parse the packet to get the info then update it
 				string[] packetData = receivedPacket.Split(',');
 				PositionX = float.Parse(packetData[3]);
@@ -58,11 +60,11 @@ class Player
 					if (player == this) continue;
 
 					// Add all of the players needed info to the packet
-					outgoingPacket += $"{player.Uuid},{player.PositionX},{player.PositionY}+";
+					outgoingPacket += $"{player.Uuid},{player.Username},{player.Color},{player.PositionX},{player.PositionY}+";
 				}
 
 				// Send the update packet to the player
-				byte[] outgoingPacketBytes = Encoding.ASCII.GetBytes(outgoingPacket);
+				byte[] outgoingPacketBytes = Encoding.ASCII.GetBytes(outgoingPacket.TrimEnd('+'));
 				Server.UdpServer.Send(outgoingPacketBytes, outgoingPacketBytes.Length, client);
 				Logger.LogPacket(outgoingPacket, Logger.PacketLogType.OUTGOING);
 			}
@@ -74,4 +76,13 @@ class Player
 			}
 		}
 	}
+
+
+
+
+
+    public override string ToString()
+    {
+        return $"{Uuid}/{Username}";
+    }
 }

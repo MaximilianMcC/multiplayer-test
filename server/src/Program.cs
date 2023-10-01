@@ -28,12 +28,12 @@ class Server
 
 			while (true)
 			{
-				// Get the currently connecting client and their data
+				// Get the currently connecting client
 				IPEndPoint currentClient = new IPEndPoint(IPAddress.Any, 0);
+
+				// Get the packet data
 				byte[] receivedPacketBytes = UdpServer.Receive(ref currentClient);
 				string receivedPacket = Encoding.ASCII.GetString(receivedPacketBytes);
-
-				// Print the packet
 				Logger.LogPacket(receivedPacket, Logger.PacketLogType.INCOMING);
 
 				// Get the packet type and check for if they want to connect
@@ -65,7 +65,7 @@ class Server
 				}
 			}
 		}
-		catch(Exception e)
+		catch (Exception e)
 		{
 			// Print out the error
 			Console.ForegroundColor = ConsoleColor.Red;

@@ -16,8 +16,9 @@ class LocalPlayer : Player
 		Sprite = new RectangleShape(new Vector2f(50, 50));
 		Sprite.FillColor = Color;
 
-		// Get a UUID for the player	
+		// Get a UUID for the player
 		Uuid = Network.RegisterPlayer(Color, username);
+		Username = username;
 	}
 
     public override void Update()
@@ -44,8 +45,6 @@ class LocalPlayer : Player
 
 		// Move the player
 		Position = newPosition;
-
-		// TODO: Update the position on the server
 	}
 
 }

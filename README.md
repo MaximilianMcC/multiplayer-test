@@ -36,3 +36,8 @@ Packets are sent as ASCII strings and their information is split with a comma. I
 | 2     | Player username         | `"Bob"`                                  |
 | 3     | Player X position       | `-456f`                                  |
 | 4     | Player Y position       | `158.7f`                                 |
+
+## User requesting player data (type 3)
+| Index | Description             | Example                                  |
+|:-----:|-------------------------|------------------------------------------|
+| 0     | Request data update type | `3` *(Only `3` can be used here)*        |
