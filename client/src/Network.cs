@@ -53,7 +53,7 @@ class Network
 	private static void UpdateLocalPlayer()
 	{
 		// Create a packet with all of the local players info
-		string outgoingPacket = $"2,{Game.LocalPlayer.Uuid},{Game.LocalPlayer.Username},{Game.LocalPlayer.Position.X},{Game.LocalPlayer.Position.Y}";
+		string outgoingPacket = $"2,{Game.LocalPlayer.Uuid},{Game.LocalPlayer.Position.X},{Game.LocalPlayer.Position.Y}";
 		Console.WriteLine($"Sending {outgoingPacket}");
 
 		// Send the local player packet to the server
@@ -68,6 +68,38 @@ class Network
 		// Get a response from the server that contains the data of all the other remote players
 		byte[] incomingPacketBytes = client.Receive(ref server);
 		string incomingPacket = Encoding.ASCII.GetString(incomingPacketBytes);
-		Console.WriteLine($"Received {incomingPacket}");
+		
+		// Exit early if nothing is being sent (no one else online)
+		if (incomingPacket.Length <= 0) return;
+
+		// Parse all the packet
+		string[] remotePackets = incomingPacket.Split('+');
+		foreach (string remotePlayerPacket in remotePackets)
+		{
+			// TODO: Check for if a player is missing, and disconnect them
+
+			string[] remotePlayerData = remotePlayerPacket.Split(',');
+
+			// Get the player from their UUID
+			string uuid = remotePlayerData[0];
+			RemotePlayer player = Game.RemotePlayers.FirstOrDefault(player => player.Uuid == uuid);
+
+			// Create a new player if a player wasn't returned before
+			if (player == null)
+			{
+				Console.WriteLine("New player joined");
+
+				// Get the players static info and create a new player with that
+				// Also add them to the player list
+				RemotePlayer newPlayer = new RemotePlayer(uuid, remotePlayerData[1], uint.Parse(remotePlayerData[2]));
+				Game.RemotePlayers.Add(newPlayer);
+
+				// Set the new player to the player so we can keep working with them
+				player = newPlayer;
+			}
+
+			// Get the players data, and update it
+			player.UpdateData(remotePlayerData);
+		}
 	}
 }

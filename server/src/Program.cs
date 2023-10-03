@@ -84,7 +84,7 @@ class Server
 						if (currentPlayer == player) continue;
 
 						// Get all of the players data and add it to the outgoing packet
-						outgoingPacket += $"{currentPlayer.Uuid},{currentPlayer.PositionX},{currentPlayer.PositionY}+";
+						outgoingPacket += $"{currentPlayer.Uuid},{currentPlayer.Username},{currentPlayer.Color},{currentPlayer.PositionX},{currentPlayer.PositionY}+";
 					}
 
 					// Send it to the player
