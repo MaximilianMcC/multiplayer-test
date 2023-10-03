@@ -24,6 +24,8 @@ class Logger
 		// Timestamp
 		BoxedText(DateTime.Now.ToString("HH:mm:ss.fff"), ConsoleColor.Cyan);
 
+		Console.ForegroundColor = ConsoleColor.White;
+
 		switch (logType)
 		{
 			case LogType.INFO:
@@ -36,11 +38,11 @@ class Logger
 
 			case LogType.ERROR:
 				BoxedText("ERROR", ConsoleColor.Red);
+				Console.ForegroundColor = ConsoleColor.Red;
 				break;
 		}
 
 		// Print the content
-		Console.ForegroundColor = ConsoleColor.White;
 		Console.WriteLine(content);
 		Console.ResetColor();
 	}

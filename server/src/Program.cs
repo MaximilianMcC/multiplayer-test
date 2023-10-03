@@ -22,11 +22,12 @@ class Server
 
 		// Create the UDP server
 		UdpServer = new UdpClient(port);
-		try
-		{
-			Logger.Log($"Server listening on port {port}...");
+		Logger.Log($"Server listening on port {port}...");
 
-			while (true)
+
+		while (true)
+		{
+			try
 			{
 				// Get the currently connecting client
 				IPEndPoint currentClient = new IPEndPoint(IPAddress.Any, 0);
@@ -67,7 +68,6 @@ class Server
 
 					if (packetType == PacketType.PLAYER_UPDATE)
 					{
-						Logger.Log($"Updating {player} rn");
 						player.Update(receivedPacket);
 					}
 					else if (packetType == PacketType.DISCONNECT)
@@ -83,31 +83,25 @@ class Server
 					{
 						if (currentPlayer == player) continue;
 
-						// Get all of the players data and add it to  the outgoing packet
+						// Get all of the players data and add it to the outgoing packet
 						outgoingPacket += $"{currentPlayer.Uuid},{currentPlayer.PositionX},{currentPlayer.PositionY}+";
 					}
 
+					// Send it to the player
+					byte[] connectionPacketBytes = Encoding.ASCII.GetBytes(outgoingPacket.Trim('+'));
+					UdpServer.Send(connectionPacketBytes, connectionPacketBytes.Length, currentClient);
+					Logger.LogPacket(outgoingPacket, Logger.PacketLogType.OUTGOING, player.ToString());
 				}
 			
-
-
+			}
+			catch (Exception e)
+			{
+				// Print out the error
+				Logger.Log("Error while running server!", Logger.LogType.ERROR);
+				Logger.Log(e.ToString(), Logger.LogType.ERROR);
 			}
 		}
-		catch (Exception e)
-		{
-			// Print out the error
-			Console.ForegroundColor = ConsoleColor.Red;
-			Console.WriteLine("Error while running server:");
-			Console.WriteLine(e);
-			Console.ResetColor();
-		}
-		finally
-		{
-			// TODO: Remove. This is never actually run.
-			// Close the UDP server
-			UdpServer.Close();
-			Console.WriteLine("Server shutdown.");
-		}
+	
 	}
 }
 
