@@ -5,6 +5,8 @@ class RemotePlayer : Player
 {
 	public RemotePlayer(string uuid, string username, uint color)
 	{
+		Console.WriteLine("Adding new played");
+		
 		// Assign variables
 		Uuid = uuid;
 		Username = username;

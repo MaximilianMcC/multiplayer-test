@@ -46,7 +46,7 @@ class Logger
 	}
 
 	// TODO: Also show IP
-	public static void LogPacket(string packet, PacketLogType packetType)
+	public static void LogPacket(string packet, PacketLogType packetType, string client)
 	{
 		// Check for if we allow fancy UI
 		if (Server.FancyUi == false) return;
@@ -67,6 +67,9 @@ class Logger
 
 		// Bytes
 		BoxedText($"{Encoding.ASCII.GetBytes(packet).Length} bytes", ConsoleColor.DarkYellow);
+
+		// Client thing
+		BoxedText(client, ConsoleColor.Blue);
 
 		// Print the packet
 		Console.ForegroundColor = ConsoleColor.Green;

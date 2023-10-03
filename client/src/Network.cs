@@ -36,52 +36,38 @@ class Network
 		string uuid = receivedPacket.Split(',')[0];
 
 		// Give back the UUID for the player to use
-		Console.WriteLine($"Received UUID {uuid} from server🤩🥳🥳");
+		Console.WriteLine($"Received UUID {uuid} from server");
 		return uuid;
 	}
 
-	
 
-	// Send the players data to the server, and get back the data of the remote players
+
 	public static void UpdatePlayers()
+	{
+		UpdateLocalPlayer();
+		UpdateRemotePlayers();
+	}
+
+
+	// Update the local players position on the server
+	private static void UpdateLocalPlayer()
 	{
 		// Create a packet with all of the local players info
 		string outgoingPacket = $"2,{Game.LocalPlayer.Uuid},{Game.LocalPlayer.Username},{Game.LocalPlayer.Position.X},{Game.LocalPlayer.Position.Y}";
+		Console.WriteLine($"Sending {outgoingPacket}");
 
 		// Send the local player packet to the server
 		byte[] outgoingPacketBytes = Encoding.ASCII.GetBytes(outgoingPacket);
 		client.Send(outgoingPacketBytes, outgoingPacketBytes.Length, server);
-
-
-
-
-
-		// Get the response from the server, that contains the data of all the other remote players
-		byte[] incomingPacketBytes = client.Receive(ref server);
-		string incomingPacket = Encoding.ASCII.GetString(incomingPacketBytes);
-
-		// Parse the incoming packet to get each individual player
-		string[] playerList = incomingPacket.Split('+');
-		foreach (string playerPacket in playerList)
-		{
-			// Extract the player data from the packet string
-			string[] playerData = playerPacket.Split(',');
-
-			// Get the players UUID to find the matching remote player,
-			// or if they don't exist, create a new remote player
-			string uuid = playerData[0];
-			RemotePlayer remotePlayer = Game.RemotePlayers.FirstOrDefault(player => player.Uuid == uuid);
-
-			// Create a new player if they don't exist
-			if (remotePlayer == null)
-			{
-				// Create the new remote player
-				RemotePlayer player = new RemotePlayer(uuid, playerData[1], uint.Parse(playerData[2]));
-			}
-		
-			// Update the existing players info
-			remotePlayer.Position = new Vector2f(float.Parse(playerData[3]), float.Parse(playerData[4]));
-		}
+		Console.WriteLine("Done");
 	}
 
+	// Update all of the local players positions from the server
+	private static void UpdateRemotePlayers()
+	{
+		// Get a response from the server that contains the data of all the other remote players
+		byte[] incomingPacketBytes = client.Receive(ref server);
+		string incomingPacket = Encoding.ASCII.GetString(incomingPacketBytes);
+		Console.WriteLine($"Received {incomingPacket}");
+	}
 }
