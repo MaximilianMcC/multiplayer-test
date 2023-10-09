@@ -1,4 +1,4 @@
-# multiplayer-test
+# Multiplayer test
 Testing making online multiplayer games with SFML and C#
 
 ## How to use
@@ -7,37 +7,60 @@ Testing making online multiplayer games with SFML and C#
 1. Run the game with the first argument as the server ip, and the second as the port. The third arg should be the player name Example: `.\game.exe 192.168.1.1 12345 bob`
 
 
-# Packet Structures
-Different packets are sent/received that contain different data. Depending on the packet type the data inside of them is layed out differently. Below are all of the packet types:
+# Packet structure
+Every time information is sent then it goes in a packet. Packets are sent in a csv style format. The first element of the packet is **always** the packet type. Packet types are listed below:
 
-1. User connecting
-2. User disconnecting
-3. User data being sent
+---
 
-Packets are sent as ASCII strings and their information is split with a comma. It's basically just sent as a CSV string.
+### 1, 2 - *New client is joining*
+This packet is sent a single time by a client when they join a server.
+| Index | Description     | Datatype |
+|:-----:|-----------------|----------|
+| 0     | Packet type (1) | uint     |
+| 1     | Player username | string   |
+| 2     | Player color    | uint     |
 
-## User connecting (type 0)
-| Index | Description            | Example                               |
-|:-----:|------------------------|---------------------------------------|
-| 0     | Player connecting type | `0` *(Only `0` can be used here)*     |
-| 1     | Player color           | `4278255615` *(`0xff00ffff`/magenta)* |
-| 2     | Player username        | `"Bob"`                               |
+This example packet will add a new player with the username of "Bob" and with a color of Magenta:
+```
+1,Bob,4278255615
+```
+Once sent to the server, a new packet will be sent back. This is a one-time use packet that contains the players UUID which will be used in every single packet from now on.
+| Index | Description     | Datatype |
+|:-----:|-----------------|----------|
+| 0     | Packet type (2) | uint     |
+| 1     | Player UUID     | string   |
 
-## User disconnecting (type 1)
-| Index | Description               | Example                           |
-|:-----:|---------------------------|-----------------------------------|
-| 0     | Player disconnecting type | `1` *(Only `1` can be used here)* |
+This example packet shows what the server will send back:
+```
+3,8d3b2502-b039-483f-bc4c-98cf316c0286
+```
 
-## User updating data (type 2)
-| Index | Description             | Example                                  |
-|:-----:|-------------------------|------------------------------------------|
-| 0     | Player data update type | `2` *(Only `2` can be used here)*        |
-| 1     | Player UUID             | `"96c2cec8-bc70-4a7c-83d7-9d2e2ccd866d"` |
-| 2     | Player username         | `"Bob"`                                  |
-| 3     | Player X position       | `-456f`                                  |
-| 4     | Player Y position       | `158.7f`                                 |
+---
 
-## User requesting player data (type 3)
-| Index | Description             | Example                                  |
-|:-----:|-------------------------|------------------------------------------|
-| 0     | Request data update type | `3` *(Only `3` can be used here)*        |
+### 3 - *Client is leaving*
+This packet is sent as single time by a client when they leave a server.
+| Index | Description     | Datatype |
+|:-----:|-----------------|----------|
+| 0     | Packet type (3) | uint     |
+| 1     | Player UUID     | string   |
+
+This example packet will remove the player with the UUID of 8d3b2502-b039-483f-bc4c-98cf316c0286 from the game/server.
+```
+3,8d3b2502-b039-483f-bc4c-98cf316c0286
+```
+
+--- 
+
+### 4 - *Client is updating data*
+This packet is sent every frame by the client. This packet contains any data that the player might need to transfer to other players.
+| Index | Description     | Datatype |
+|:-----:|-----------------|----------|
+| 0     | Packet type (4) | uint     |
+| 1     | Player UUID     | string   |
+| 2     | Player X        | float    |
+| 3     | Player Y        | float    |
+
+This example packet will set the players position to (154.56, 384.67).
+```
+4,8d3b2502-b039-483f-bc4c-98cf316c0286,154.56,384.67
+```
