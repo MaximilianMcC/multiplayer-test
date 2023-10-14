@@ -32,7 +32,7 @@ Once sent to the server, a new packet will be sent back. This is a one-time use 
 
 This example packet shows what the server will send back:
 ```
-3,8d3b2502-b039-483f-bc4c-98cf316c0286
+2,8d3b2502-b039-483f-bc4c-98cf316c0286
 ```
 
 ---

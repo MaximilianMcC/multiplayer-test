@@ -11,9 +11,8 @@ class RemotePlayer : Player
 		Uuid = uuid;
 		Username = username;
 
-		// Create the sprite for the player
-		Sprite = new RectangleShape(new Vector2f(50, 50));
-		Sprite.FillColor = new Color(color);
+		// Make a sprite for the player
+		GenerateSprite(Color, username);
 
 		Console.WriteLine("Added new remote player with UUID of " + Uuid);
 	}
@@ -22,5 +21,14 @@ class RemotePlayer : Player
 	public void UpdateData(string[] packet)
 	{
 		Position = new Vector2f(float.Parse(packet[3]), float.Parse(packet[4]));
+	}
+
+	// Leave the game
+	public void Disconnect()
+	{
+		// Remove the player from the remote players list
+		Game.RemotePlayers.Remove(this);
+		
+		Console.WriteLine("Player has left the game (sobbing)");
 	}
 }

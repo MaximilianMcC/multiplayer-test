@@ -45,16 +45,15 @@ class Server
 					
 					// Parse the packet to get the color and username
 					string[] packetData = receivedPacket.Split(',');
-					uint color = uint.Parse(packetData[1]);
-					string username = packetData[2];
+					string username = packetData[1];
+					uint color = uint.Parse(packetData[2]);
 
 					// Create, then add the player to the player list
 					Player player = new Player(username, color);
 					PlayerList.Add(player);
 
 					// Send back the players new UUID
-					// TODO: If Removing debug stuff them remove connectionPacket string because its useless here
-					string connectionPacket = player.Uuid;
+					string connectionPacket = $"2,{player.Uuid}";
 					byte[] connectionPacketBytes = Encoding.ASCII.GetBytes(connectionPacket);
 					UdpServer.Send(connectionPacketBytes, connectionPacketBytes.Length, currentClient);
 					Logger.LogPacket(connectionPacket, Logger.PacketLogType.OUTGOING, player.ToString());
@@ -107,8 +106,8 @@ class Server
 
 public enum PacketType
 {
-	CONNECT = 0,
-	DISCONNECT = 1,
+	CONNECT = 1,
+	DISCONNECT = 3,
 
-	PLAYER_UPDATE = 2
+	PLAYER_UPDATE = 4
 }
