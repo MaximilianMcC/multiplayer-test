@@ -14,6 +14,9 @@ class Player
 	public float PositionX { get; set; }
 	public float PositionY { get; set; }
 
+	// Server/Networking player values
+	public bool Disconnected { get; set; }
+
 	// Create a new player
 	public Player(string username, uint color)
 	{

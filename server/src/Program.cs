@@ -4,12 +4,13 @@ using System.Text;
 
 class Server
 {
-	// Enable fancy UI or not (Might slow down server performance)
+	// Enable fancy UI or not (slows down server performance)
 	public static bool FancyUi = true;
 
 	// TODO: Don't use IP to identify players. Use UUID then multiple on same pc can join
 	public static UdpClient UdpServer;
 	public static List<Player> PlayerList = new List<Player>();
+	private static Dictionary<Player, DateTime> disconnectionQueue = new Dictionary<Player, DateTime>();
 
 	public static void Main(string[] args)
 	{
@@ -37,60 +38,22 @@ class Server
 				string receivedPacket = Encoding.ASCII.GetString(receivedPacketBytes);
 				Logger.LogPacket(receivedPacket, Logger.PacketLogType.INCOMING, "UNKNOWN");
 
-				// Get the packet type and check for what they want to do
+				// Get the packet type so we can see what data is being sent
 				PacketType packetType = (PacketType)int.Parse(receivedPacket.Split(',')[0]);
-				if (packetType == PacketType.CONNECT)
-				{
-					Logger.Log("New player is asking to connect");
-					
-					// Parse the packet to get the color and username
-					string[] packetData = receivedPacket.Split(',');
-					string username = packetData[1];
-					uint color = uint.Parse(packetData[2]);
-
-					// Create, then add the player to the player list
-					Player player = new Player(username, color);
-					PlayerList.Add(player);
-
-					// Send back the players new UUID
-					string connectionPacket = $"2,{player.Uuid}";
-					byte[] connectionPacketBytes = Encoding.ASCII.GetBytes(connectionPacket);
-					UdpServer.Send(connectionPacketBytes, connectionPacketBytes.Length, currentClient);
-					Logger.LogPacket(connectionPacket, Logger.PacketLogType.OUTGOING, player.ToString());
-				}
-				else
-				{
-					// Get the player object using the sent UUID
-					//! If not in then it will be null. do something with that idk!!!
-					string uuid = receivedPacket.Split(',')[1];
-					Player player = PlayerList.FirstOrDefault(player => player.Uuid == uuid);
-
-					if (packetType == PacketType.PLAYER_UPDATE)
-					{
-						player.Update(receivedPacket);
-					}
-					else if (packetType == PacketType.DISCONNECT)
-					{
-						Logger.Log($"{player} left the game");
-					}
 
 
-					// Send back the data for all players
-					// except the current player
-					string outgoingPacket = "";
-					foreach (Player currentPlayer in PlayerList)
-					{
-						if (currentPlayer == player) continue;
 
-						// Get all of the players data and add it to the outgoing packet
-						outgoingPacket += $"{currentPlayer.Uuid},{currentPlayer.Username},{currentPlayer.Color},{currentPlayer.PositionX},{currentPlayer.PositionY}+";
-					}
+				// TODO: Check for if a client is trying to connect
 
-					// Send it to the player
-					byte[] connectionPacketBytes = Encoding.ASCII.GetBytes(outgoingPacket.Trim('+'));
-					UdpServer.Send(connectionPacketBytes, connectionPacketBytes.Length, currentClient);
-					Logger.LogPacket(outgoingPacket, Logger.PacketLogType.OUTGOING, player.ToString());
-				}
+
+
+				// TODO: Check for if a client is trying to disconnect
+
+
+
+				// TODO: Send remote player data
+
+
 			
 			}
 			catch (Exception e)
@@ -104,9 +67,12 @@ class Server
 	}
 }
 
+
 public enum PacketType
 {
 	CONNECT = 1,
+	CONNECT_RESPONSE = 2,
+
 	DISCONNECT = 3,
 
 	PLAYER_UPDATE = 4
