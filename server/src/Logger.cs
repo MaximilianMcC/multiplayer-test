@@ -51,7 +51,7 @@ class Logger
 	public static void LogPacket(string packet, PacketLogType packetType, string client)
 	{
 		// Check for if we allow fancy UI
-		if (Server.FancyUi == false) return;
+		if (Server.LogPackets == false) return;
 
 		// Timestamp
 		BoxedText(DateTime.Now.ToString("HH:mm:ss.fff"), ConsoleColor.Cyan);
