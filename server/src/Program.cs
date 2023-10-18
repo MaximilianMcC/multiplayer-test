@@ -6,6 +6,7 @@ class Server
 {
 	// Enable fancy UI or not (slows down server performance)
 	public static bool FancyUi = true;
+	public static bool LogPackets = true;
 
 
 	// General server stuff
@@ -14,10 +15,9 @@ class Server
 
 
 	// Event queues
-	private const int packetResendTimeout = 10; //? Seconds
-	// TODO: Use struct instead
-	private static List<Connection> connectionQueue = new List<Connection>();
-	//! private static List<Disconnection> connectionQueue = new List<Disconnection>();
+	private const int retransmissionTimeout = 3; //? Seconds
+	private static Dictionary<string, DateTime> acknowledgementPacketQueue = new Dictionary<string, DateTime>();
+	
 
 
 
@@ -75,22 +75,26 @@ class Server
 
 
 
-	// Events are something that is important. Stuff like a player joining/leaving.
-	// These require a three-way handshake
+	// Retransmit acknowledgement packets if needed
 	private static void HandleEvents(IPEndPoint client)
 	{
-
-		// Check for if a player has sent back a connection acknowledgement packet
-		foreach (Connection connectingPlayer in connectionQueue)
+		// TODO: Count how many retransmission packets have been sent. if over 100 or something then cancel/give up
+		
+		// Loop over all of the sent acknowledgement packets
+		foreach (KeyValuePair<string, DateTime> packet in acknowledgementPacketQueue)
 		{
-			// Check for if the packet has timed out. If it has then either the packet
-			// got lost, or the client is ignoring us (rude)
-			TimeSpan timeElapsed = DateTime.Now - connectingPlayer.SendTime;
-			if (timeElapsed.TotalSeconds <= packetResendTimeout) continue;
-			
-			// Send the packet again
-			
+			// Get the elapsed time since the packet was sent
+			TimeSpan elapsedTime = DateTime.Now - packet.Value;
+
+			// Check for if the packet timed out (no response)
+			if (elapsedTime.TotalSeconds >= retransmissionTimeout)
+			{
+				// Send the packet again
+				Logger.Log("Packet transmission failed. Retransmitting.", Logger.LogType.WARN);
+				SendPacket(packet.Key, client);
+			}
 		}
+
 	}
 
 
@@ -107,11 +111,7 @@ class Server
 
 			// Get the players UUID and send it back to them
 			string connectionPacket = $"{(int)PacketType.CONNECT_RESPONSE},{player.Uuid}";
-			SendPacket(connectionPacket, client);
-
-			// Wait for an acknowledgment packet from the player then
-			// add them to the game once we know they are connected
-			connectionQueue.Add(new Connection(player, connectionPacket));
+			SendAcknowledgementPacket(connectionPacket, client);
 		}
 
 
@@ -134,14 +134,23 @@ class Server
 	// Send a packet
 	private static void SendPacket(string packet, IPEndPoint client)
 	{
-		// Encode the packet
+		// Encode, then send the packet
 		byte[] packetBytes = Encoding.ASCII.GetBytes(packet);
-
-		// Send the packet
 		UdpServer.Send(packetBytes, packetBytes.Length, client);
+
+		// Log it
+		Logger.LogPacket(packet, Logger.PacketLogType.OUTGOING, client.ToString());
 	}
 
-
+	// Send an acknowledgement packet
+	// Where a response must be sent by the client. If one isn't sent then
+	// the packet will be retransmitted until received successfully
+	private static void SendAcknowledgementPacket(string packet, IPEndPoint client)
+	{
+		// TODO: Add something to the packet type that states its an acknowledgement packet
+		// TODO: Add a guid that is used to relate a packet so we know to remove it once its been received
+		acknowledgementPacketQueue.Add(packet, DateTime.Now);
+	}
 }
 
 
@@ -153,20 +162,4 @@ public enum PacketType
 	DISCONNECT = 3,
 
 	PLAYER_UPDATE = 4
-}
-
-
-
-struct Connection
-{
-	public Player Player { get; set; }
-	public string Packet { get; set; }
-	public DateTime SendTime { get; set; }
-
-	public Connection(Player player, string packet)
-	{
-		Player = player;
-		Packet = packet;
-		SendTime = DateTime.Now;
-	}
 }
