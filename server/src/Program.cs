@@ -15,8 +15,9 @@ class Server
 
 
 	// Event queues
-	private const int retransmissionTimeout = 3; //? Seconds
-	private static Dictionary<string, DateTime> acknowledgementPacketQueue = new Dictionary<string, DateTime>();
+	private const uint retransmissionTimeout = 350; //? Milliseconds 
+	private const uint maxRetransmissions = 15;
+	private static List<AcknowledgementPacket> acknowledgementPacketQueue = new List<AcknowledgementPacket>();
 	
 
 
@@ -81,17 +82,29 @@ class Server
 		// TODO: Count how many retransmission packets have been sent. if over 100 or something then cancel/give up
 		
 		// Loop over all of the sent acknowledgement packets
-		foreach (KeyValuePair<string, DateTime> packet in acknowledgementPacketQueue)
+		for (int i = 0; i < acknowledgementPacketQueue.Count; i++)
 		{
+			AcknowledgementPacket packet = acknowledgementPacketQueue[i];
+
 			// Get the elapsed time since the packet was sent
-			TimeSpan elapsedTime = DateTime.Now - packet.Value;
+			TimeSpan elapsedTime = DateTime.Now - packet.SendTime;
 
 			// Check for if the packet timed out (no response)
-			if (elapsedTime.TotalSeconds >= retransmissionTimeout)
+			if (elapsedTime.TotalMilliseconds >= retransmissionTimeout)
 			{
 				// Send the packet again
 				Logger.Log("Packet transmission failed. Retransmitting.", Logger.LogType.WARN);
-				SendPacket(packet.Key, client);
+				SendPacket(packet.Content, client);
+				packet.SendTime = DateTime.Now;
+				packet.TimesSent++;
+			}
+
+			// Check for if the packet has been sent more than the max times its allowed (timed-out)
+			if (packet.TimesSent > maxRetransmissions)
+			{
+				// Remove the packet from the acknowledgement packet queue
+				Logger.Log($"Connection timed-out after too many failed attempts.", Logger.LogType.ERROR);
+				acknowledgementPacketQueue.Remove(packet);
 			}
 		}
 
@@ -147,19 +160,37 @@ class Server
 	// the packet will be retransmitted until received successfully
 	private static void SendAcknowledgementPacket(string packet, IPEndPoint client)
 	{
-		// TODO: Add something to the packet type that states its an acknowledgement packet
-		// TODO: Add a guid that is used to relate a packet so we know to remove it once its been received
-		acknowledgementPacketQueue.Add(packet, DateTime.Now);
+		AcknowledgementPacket acknowledgementPacket = new AcknowledgementPacket(packet);
+		acknowledgementPacketQueue.Add(acknowledgementPacket);
 	}
 }
+
+
 
 
 public enum PacketType
 {
 	CONNECT = 1,
 	CONNECT_RESPONSE = 2,
-
 	DISCONNECT = 3,
 
-	PLAYER_UPDATE = 4
+	PLAYER_UPDATE = 4,
+
+	SYN = 5,
+	ACK = 6
+}
+
+
+// TODO: Put in class
+struct AcknowledgementPacket
+{
+	public string Content { get; private set; }
+	public uint TimesSent { get; set; }
+	public DateTime SendTime { get; set; }
+
+	public AcknowledgementPacket(string packet)
+	{
+		//! SendTime might be a bit delayed by a few ms
+		SendTime = DateTime.Now;
+	}
 }
