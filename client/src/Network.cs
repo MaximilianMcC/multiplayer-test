@@ -46,7 +46,7 @@ class Network
 		string uuid = receivedPacket.Split(',')[1];
 
 		// Give back the UUID for the player to use
-		Console.WriteLine($"Received UUID {uuid} from server");
+		Logger.Log($"Received UUID {uuid} from server");
 		return uuid;
 	}
 

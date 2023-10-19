@@ -15,6 +15,8 @@ class Game
 	// TODO: Don't include player username in here
 	public void Run(string ip, string port, string username)
 	{
+		Logger.Log("Loading");
+
 		// Create the SFML window
 		Window = new RenderWindow(new VideoMode(800, 600), "gaem");
 		Window.SetFramerateLimit(60);
