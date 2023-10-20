@@ -10,15 +10,18 @@ class Server
 
 
 	// General server stuff
+	public static int Port;
 	public static UdpClient UdpServer;
 	public static List<Player> PlayerList = new List<Player>();
 
 
 	// Event queues
-	private const uint retransmissionTimeout = 350; //? Milliseconds 
-	private const uint maxRetransmissions = 15;
-	private static List<AcknowledgementPacket> acknowledgementPacketQueue = new List<AcknowledgementPacket>();
+	// TODO: Play around with these values. idk the gpt gave them
+	public const uint retransmissionTimeout = 350; //? Milliseconds 
+	public const uint maxRetransmissions = 15;
+	public static List<RetransmissionPacket> AcknowledgementPacketQueue = new List<RetransmissionPacket>();
 	
+
 
 
 
@@ -32,165 +35,111 @@ class Server
 		Console.Title = "mutliplauyer test sererv";
 
 		// Get the server port from the launch arguments
-		int port = int.Parse(args[0]);
+		Port = int.Parse(args[0]);
 
 		// Create the UDP server
-		UdpServer = new UdpClient(port);
-		Logger.Log($"Server listening on port {port}...");
+		UdpServer = new UdpClient(Port);
+
+		
+
+		// Start listening for packets
+		Thread listenThread = new Thread(Listen);
+		listenThread.Start();
+
+		// Start handling retransmissions
+		Thread retransmissionThread = new Thread(Retransmit);
+		retransmissionThread.Start();
+	}
 
 
+	private static void Listen()
+	{
+		Logger.Log($"Server listening on port {Port}...");
 		while (true)
 		{
 			try
 			{
 				// Get the currently connecting client
-				IPEndPoint currentClient = new IPEndPoint(IPAddress.Any, 0);
+				IPEndPoint client = new IPEndPoint(IPAddress.Any, 0);
 
 				// Get the packet data
-				byte[] receivedPacketBytes = UdpServer.Receive(ref currentClient);
+				byte[] receivedPacketBytes = UdpServer.Receive(ref client);
 				string receivedPacket = Encoding.ASCII.GetString(receivedPacketBytes);
-				Logger.LogPacket(receivedPacket, Logger.PacketLogType.INCOMING, "UNKNOWN");
+				Logger.LogPacket(receivedPacket, PacketLogType.INCOMING, "UNKNOWN");
 
 				// Get the packet type so we can see what data is being sent
 				string[] packet = receivedPacket.Split(',');
 				PacketType packetType = (PacketType)int.Parse(packet[0]);
 
+				// Do something with the packet
+				switch (packetType)
+				{
+					// Check for if a retransmission was received and sent back
+					case PacketType.ACK:
+						Logger.Log("test 123");
+						break;
+
+					// New player connect to the server
+					case PacketType.CONNECT:
+						PacketHandler.ConnectPlayer(packet, client);
+						break;
 
 
-				// Handle everything
-				HandleEvents(currentClient);
-				HandlePackets(currentClient, packetType, packet);
 
-
-
+					default:
+						Logger.Log("erhmmm, this packet doesn't seem to have a legitimate packet id!!1!", LogType.ERROR);
+						break;
+				}
 			}
 			catch (Exception e)
 			{
 				// Print out the error
-				Logger.Log("Error while running server!", Logger.LogType.ERROR);
-				Logger.Log(e.ToString(), Logger.LogType.ERROR);
+				Logger.Log("Error while listening!", LogType.ERROR);
+				Logger.Log(e.ToString(), LogType.ERROR);
 			}
 		}
-	
 	}
 
-
-
-	// Retransmit acknowledgement packets if needed
-	private static void HandleEvents(IPEndPoint client)
+	private static void Retransmit()
 	{
-		// TODO: Count how many retransmission packets have been sent. if over 100 or something then cancel/give up
-		
-		// Loop over all of the sent acknowledgement packets
-		for (int i = 0; i < acknowledgementPacketQueue.Count; i++)
+		Logger.Log($"Began handling retransmissions");
+		while (true)
 		{
-			AcknowledgementPacket packet = acknowledgementPacketQueue[i];
-
-			// Get the elapsed time since the packet was sent
-			TimeSpan elapsedTime = DateTime.Now - packet.SendTime;
-
-			// Check for if the packet timed out (no response)
-			if (elapsedTime.TotalMilliseconds >= retransmissionTimeout)
+			try
 			{
-				// Send the packet again
-				Logger.Log("Packet transmission failed. Retransmitting.", Logger.LogType.WARN);
-				SendPacket(packet.Content, client);
-				packet.SendTime = DateTime.Now;
-				packet.TimesSent++;
+				// Loop over all of the sent acknowledgement packets
+				for (int i = 0; i < AcknowledgementPacketQueue.Count; i++)
+				{
+					RetransmissionPacket packet = AcknowledgementPacketQueue[i];
+
+					// Get the elapsed time since the packet was sent
+					TimeSpan elapsedTime = DateTime.Now - packet.SendTime;
+
+					// Check for if the packet timed out (no response)
+					if (elapsedTime.TotalMilliseconds >= retransmissionTimeout)
+					{
+						// Send the packet again
+						Logger.Log("Packet transmission failed. Retransmitting.", LogType.WARN);
+						PacketHandler.SendPacket(packet.Content, packet.Client);
+						packet.SendTime = DateTime.Now;
+						packet.TimesSent++;
+					}
+
+					// Check for if the packet has been sent more than the max times its allowed (timed-out)
+					if (packet.TimesSent > maxRetransmissions)
+					{
+						// Remove the packet from the acknowledgement packet queue
+						Logger.Log($"Connection timed-out after too many failed attempts.", LogType.ERROR);
+						AcknowledgementPacketQueue.Remove(packet);
+					}
+				}
 			}
-
-			// Check for if the packet has been sent more than the max times its allowed (timed-out)
-			if (packet.TimesSent > maxRetransmissions)
+			catch (Exception e)
 			{
-				// Remove the packet from the acknowledgement packet queue
-				Logger.Log($"Connection timed-out after too many failed attempts.", Logger.LogType.ERROR);
-				acknowledgementPacketQueue.Remove(packet);
+				// Print out the error
+				Logger.Log("Error while retransmitting!", LogType.ERROR);
+				Logger.Log(e.ToString(), LogType.ERROR);
 			}
 		}
-
-	}
-
-
-
-	private static void HandlePackets(IPEndPoint client, PacketType packetType, string[] packet)
-	{
-		// Check for if a client is trying to connect
-		if (packetType == PacketType.CONNECT)
-		{
-			// Use the information received to create a new player
-			string username = packet[1];
-			uint color = uint.Parse(packet[2]);
-			Player player = new Player(username, color);
-
-			// Get the players UUID and send it back to them
-			string connectionPacket = $"{(int)PacketType.CONNECT_RESPONSE},{player.Uuid}";
-			SendAcknowledgementPacket(connectionPacket, client);
-		}
-
-
-		// TODO: Check for if a client is trying to disconnect
-
-
-
-		// TODO: Send remote player data
-
-
-
-	}
-
-
-
-
-
-
-
-	// Send a packet
-	private static void SendPacket(string packet, IPEndPoint client)
-	{
-		// Encode, then send the packet
-		byte[] packetBytes = Encoding.ASCII.GetBytes(packet);
-		UdpServer.Send(packetBytes, packetBytes.Length, client);
-
-		// Log it
-		Logger.LogPacket(packet, Logger.PacketLogType.OUTGOING, client.ToString());
-	}
-
-	// Send an acknowledgement packet
-	// Where a response must be sent by the client. If one isn't sent then
-	// the packet will be retransmitted until received successfully
-	private static void SendAcknowledgementPacket(string packet, IPEndPoint client)
-	{
-		AcknowledgementPacket acknowledgementPacket = new AcknowledgementPacket(packet);
-		acknowledgementPacketQueue.Add(acknowledgementPacket);
-	}
-}
-
-
-
-
-public enum PacketType
-{
-	CONNECT = 1,
-	CONNECT_RESPONSE = 2,
-	DISCONNECT = 3,
-
-	PLAYER_UPDATE = 4,
-
-	SYN = 5,
-	ACK = 6
-}
-
-
-// TODO: Put in class
-struct AcknowledgementPacket
-{
-	public string Content { get; private set; }
-	public uint TimesSent { get; set; }
-	public DateTime SendTime { get; set; }
-
-	public AcknowledgementPacket(string packet)
-	{
-		//! SendTime might be a bit delayed by a few ms
-		SendTime = DateTime.Now;
 	}
 }

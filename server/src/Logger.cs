@@ -1,19 +1,20 @@
 using System.Text;
 
+public enum LogType
+{
+	INFO,
+	WARN,
+	ERROR
+}
+
+public enum PacketLogType
+{
+	INCOMING,
+	OUTGOING
+}
+
 class Logger
 {
-	public enum LogType
-	{
-		INFO,
-		WARN,
-		ERROR
-	}
-
-	public enum PacketLogType
-	{
-		INCOMING,
-		OUTGOING
-	}
 
 	// TODO: Chance the color of stuff in quotes, or numbers in a string to highlight important info
 	public static void Log(string content, LogType logType = LogType.INFO)
