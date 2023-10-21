@@ -2,17 +2,7 @@ using System.Net;
 using System.Text;
 
 
-public enum PacketType
-{
-	CONNECT = 1,
-	CONNECT_RESPONSE = 2,
-	DISCONNECT = 3,
 
-	PLAYER_UPDATE = 4,
-
-	SYN = 5,
-	ACK = 6
-}
 
 
 

@@ -8,7 +8,17 @@ Testing making online multiplayer games with SFML and C#
 
 
 # Packet structure
-Every time information is sent then it goes in a packet. Packets are sent in a csv style format. The first element of the packet is **always** the packet type. Packet types are listed below:
+> [!WARNING]
+> This stuff changing like daily or something idk so watch out. Nothing final and prolly never will be🥱🥱 
+
+
+All packet must start like this:
+```
+{packet id},{synchronization packet},{acknowledgement packet}
+
+example:
+4,0,0
+```
 
 ---
 

@@ -52,6 +52,7 @@ class Server
 	}
 
 
+
 	private static void Listen()
 	{
 		Logger.Log($"Server listening on port {Port}...");
