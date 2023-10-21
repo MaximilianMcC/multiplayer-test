@@ -2,8 +2,8 @@ using System.Text;
 
 class Logger
 {
-	private static bool EnableLogging { get; set; } = true;
-	private static bool EnablePacketLogging { get; set; } = false;
+	public static bool LogMessages { get; set; }
+	public static bool LogPackets { get; set; }
 
 
 	public enum LogType
@@ -23,7 +23,7 @@ class Logger
 	public static void Log(string message, LogType logType = LogType.INFO)
 	{
 		// Check for if we are allowed to log
-		if (!EnableLogging) return;
+		if (!LogMessages) return;
 
 		// Timestamp
 		BoxedText(DateTime.Now.ToString("HH:mm:ss.fff"), ConsoleColor.Cyan);
@@ -53,7 +53,7 @@ class Logger
 	public static void LogPacket(string packet, PacketLogType packetType, string client)
 	{
 		// Check for if we are allowed to log
-		if (!EnablePacketLogging) return;
+		if (!LogPackets) return;
 
 		// Timestamp
 		BoxedText(DateTime.Now.ToString("HH:mm:ss.fff"), ConsoleColor.Cyan);
