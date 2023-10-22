@@ -17,9 +17,11 @@ class PacketHandler
 		uint color = uint.Parse(packet[2]);
 		Player player = new Player(username, color);
 
-		// Get the players UUID and send it back to them
-		string connectionPacket = $"{(int)PacketType.CONNECT_RESPONSE},{player.Uuid}";
-		SendAcknowledgementPacket(connectionPacket, client);
+
+
+		// Send them back a packet with their new UUID
+		ConnectionPacket connectionPacket = new ConnectionPacket();
+		connectionPacket.Send(client);
 	}
 
 
@@ -38,30 +40,12 @@ class PacketHandler
 
 
 
-	// Send a packet
-	public static void SendPacket(string packet, IPEndPoint client)
-	{
-		// Encode, then send the packet
-		byte[] packetBytes = Encoding.ASCII.GetBytes(packet);
-		Server.UdpServer.Send(packetBytes, packetBytes.Length, client);
 
-		// Log it
-		Logger.LogPacket(packet, PacketLogType.OUTGOING, client.ToString());
-	}
 
 	// Send an acknowledgement packet
 	// Where a response must be sent by the client. If one isn't sent then
 	// the packet will be retransmitted until received successfully
-	public static void SendAcknowledgementPacket(string packet, IPEndPoint client)
-	{
-		// Add a guid to the end of the packet to identify it when it comes back
-		string guid = new Guid().ToString();
 
-		// Make a new re-transmissible packet, then send it
-		RetransmissionPacket acknowledgementPacket = new RetransmissionPacket(packet, guid, client);
-		Server.AcknowledgementPacketQueue.Add(acknowledgementPacket);
-		SendPacket(packet, client);
-	}
 
 }
 

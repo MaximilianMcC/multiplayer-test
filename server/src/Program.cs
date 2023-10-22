@@ -47,8 +47,8 @@ class Server
 		listenThread.Start();
 
 		// Start handling retransmissions
-		Thread retransmissionThread = new Thread(Retransmit);
-		retransmissionThread.Start();
+		// Thread retransmissionThread = new Thread(Retransmit);
+		// retransmissionThread.Start();
 	}
 
 
@@ -76,9 +76,9 @@ class Server
 				switch (packetType)
 				{
 					// Check for if a retransmission was received and sent back
-					case PacketType.ACK:
-						Logger.Log("test 123");
-						break;
+					// case PacketType.:
+					// 	Logger.Log("test 123");
+					// 	break;
 
 					// New player connect to the server
 					case PacketType.CONNECT:
@@ -101,46 +101,46 @@ class Server
 		}
 	}
 
-	private static void Retransmit()
-	{
-		Logger.Log($"Began handling retransmissions");
-		while (true)
-		{
-			try
-			{
-				// Loop over all of the sent acknowledgement packets
-				for (int i = 0; i < AcknowledgementPacketQueue.Count; i++)
-				{
-					RetransmissionPacket packet = AcknowledgementPacketQueue[i];
+	// private static void Retransmit()
+	// {
+	// 	Logger.Log($"Began handling retransmissions");
+	// 	while (true)
+	// 	{
+	// 		try
+	// 		{
+	// 			// Loop over all of the sent acknowledgement packets
+	// 			for (int i = 0; i < AcknowledgementPacketQueue.Count; i++)
+	// 			{
+	// 				RetransmissionPacket packet = AcknowledgementPacketQueue[i];
 
-					// Get the elapsed time since the packet was sent
-					TimeSpan elapsedTime = DateTime.Now - packet.SendTime;
+	// 				// Get the elapsed time since the packet was sent
+	// 				TimeSpan elapsedTime = DateTime.Now - packet.SendTime;
 
-					// Check for if the packet timed out (no response)
-					if (elapsedTime.TotalMilliseconds >= retransmissionTimeout)
-					{
-						// Send the packet again
-						Logger.Log("Packet transmission failed. Retransmitting.", LogType.WARN);
-						PacketHandler.SendPacket(packet.Content, packet.Client);
-						packet.SendTime = DateTime.Now;
-						packet.TimesSent++;
-					}
+	// 				// Check for if the packet timed out (no response)
+	// 				if (elapsedTime.TotalMilliseconds >= retransmissionTimeout)
+	// 				{
+	// 					// Send the packet again
+	// 					Logger.Log("Packet transmission failed. Retransmitting.", LogType.WARN);
+	// 					PacketHandler.SendPacket(packet.Content, packet.Client);
+	// 					packet.SendTime = DateTime.Now;
+	// 					packet.TimesSent++;
+	// 				}
 
-					// Check for if the packet has been sent more than the max times its allowed (timed-out)
-					if (packet.TimesSent > maxRetransmissions)
-					{
-						// Remove the packet from the acknowledgement packet queue
-						Logger.Log($"Connection timed-out after too many failed attempts.", LogType.ERROR);
-						AcknowledgementPacketQueue.Remove(packet);
-					}
-				}
-			}
-			catch (Exception e)
-			{
-				// Print out the error
-				Logger.Log("Error while retransmitting!", LogType.ERROR);
-				Logger.Log(e.ToString(), LogType.ERROR);
-			}
-		}
-	}
+	// 				// Check for if the packet has been sent more than the max times its allowed (timed-out)
+	// 				if (packet.TimesSent > maxRetransmissions)
+	// 				{
+	// 					// Remove the packet from the acknowledgement packet queue
+	// 					Logger.Log($"Connection timed-out after too many failed attempts.", LogType.ERROR);
+	// 					AcknowledgementPacketQueue.Remove(packet);
+	// 				}
+	// 			}
+	// 		}
+	// 		catch (Exception e)
+	// 		{
+	// 			// Print out the error
+	// 			Logger.Log("Error while retransmitting!", LogType.ERROR);
+	// 			Logger.Log(e.ToString(), LogType.ERROR);
+	// 		}
+	// 	}
+	// }
 }
