@@ -13,13 +13,6 @@ class Server
 	public static int Port;
 	public static UdpClient UdpServer;
 	public static List<Player> PlayerList = new List<Player>();
-
-
-	// Event queues
-	// TODO: Play around with these values. idk the gpt gave them
-	public const uint retransmissionTimeout = 350; //? Milliseconds 
-	public const uint maxRetransmissions = 15;
-	public static List<RetransmissionPacket> AcknowledgementPacketQueue = new List<RetransmissionPacket>();
 	
 
 
@@ -101,46 +94,36 @@ class Server
 		}
 	}
 
-	// private static void Retransmit()
-	// {
-	// 	Logger.Log($"Began handling retransmissions");
-	// 	while (true)
-	// 	{
-	// 		try
-	// 		{
-	// 			// Loop over all of the sent acknowledgement packets
-	// 			for (int i = 0; i < AcknowledgementPacketQueue.Count; i++)
-	// 			{
-	// 				RetransmissionPacket packet = AcknowledgementPacketQueue[i];
+	private static void Retransmit()
+	{
+		Logger.Log($"Began handling retransmissions");
+		while (true)
+		{
+			try
+			{
+				// Loop over all of the retransmission packets
+				for (int i = 0; i < PacketHandler.RetransmissionPacketQueue.Count; i++)
+				{
+					// Get the current packet
+					RetransmissionPacket packet = PacketHandler.RetransmissionPacketQueue[i];
 
-	// 				// Get the elapsed time since the packet was sent
-	// 				TimeSpan elapsedTime = DateTime.Now - packet.SendTime;
 
-	// 				// Check for if the packet timed out (no response)
-	// 				if (elapsedTime.TotalMilliseconds >= retransmissionTimeout)
-	// 				{
-	// 					// Send the packet again
-	// 					Logger.Log("Packet transmission failed. Retransmitting.", LogType.WARN);
-	// 					PacketHandler.SendPacket(packet.Content, packet.Client);
-	// 					packet.SendTime = DateTime.Now;
-	// 					packet.TimesSent++;
-	// 				}
+					// Check for if the packet needs to be retransmitted
+					TimeSpan timeSinceLastTransmitted = DateTime.Now - packet.LastTimeSent;
+					if (timeSinceLastTransmitted.Milliseconds >= PacketHandler.retransmissionTimeout)
+					{
+						// Resend the packet
+						packet.Send();
+					}
 
-	// 				// Check for if the packet has been sent more than the max times its allowed (timed-out)
-	// 				if (packet.TimesSent > maxRetransmissions)
-	// 				{
-	// 					// Remove the packet from the acknowledgement packet queue
-	// 					Logger.Log($"Connection timed-out after too many failed attempts.", LogType.ERROR);
-	// 					AcknowledgementPacketQueue.Remove(packet);
-	// 				}
-	// 			}
-	// 		}
-	// 		catch (Exception e)
-	// 		{
-	// 			// Print out the error
-	// 			Logger.Log("Error while retransmitting!", LogType.ERROR);
-	// 			Logger.Log(e.ToString(), LogType.ERROR);
-	// 		}
-	// 	}
-	// }
+				}
+			}
+			catch (Exception e)
+			{
+				// Print out the error
+				Logger.Log("Error while retransmitting!", LogType.ERROR);
+				Logger.Log(e.ToString(), LogType.ERROR);
+			}
+		}
+	}
 }

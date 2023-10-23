@@ -4,6 +4,8 @@
 using System.Net;
 using System.Text;
 
+
+
 public enum PacketType
 {
 	CONNECT = 1,
@@ -27,13 +29,19 @@ class Packet
 	// Mandatory packet stuff
 	public PacketType Type { get; protected set; }
 	public TransmissionType TransmissionType { get; protected set; }
+	public IPEndPoint Client { get; private set; }
 
 
+	public virtual void Send()
+	{
+		SendPacket("not implemented!!", Client);
+	}
 
 
 
 
 	// Send a packet
+	// TODO: Put somewhere else
 	public static void SendPacket(string packet, IPEndPoint client)
 	{
 		// Encode, then send the packet
@@ -51,11 +59,47 @@ class Packet
 		string guid = new Guid().ToString();
 
 		// Make a new re-transmissible packet, then send it
-		RetransmissionPacket acknowledgementPacket = new RetransmissionPacket(packet, guid, client);
-		Server.AcknowledgementPacketQueue.Add(acknowledgementPacket);
-		SendPacket(packet, client);
+		// RetransmissionPacket acknowledgementPacket = new RetransmissionPacket(packet, guid, client);
+		// Server.AcknowledgementPacketQueue.Add(acknowledgementPacket);
+		// SendPacket(packet, client);
 	}
 }
+
+
+
+class RetransmissionPacket : Packet
+{
+	public string Guid { get; private set; }
+	public uint TimesSent { get; private set; }
+	public DateTime LastTimeSent { get; private set; }
+
+	public RetransmissionPacket()
+	{
+		// Create a new GUID so that the packet can be identified when it comes back
+		Guid = new Guid().ToString();
+
+		// Add the packet to the retransmission list
+		PacketHandler.RetransmissionPacketQueue.Add(this);
+	}
+
+    public override void Send()
+    {
+        // Increase the values
+		TimesSent++;
+		LastTimeSent = DateTime.Now;
+
+		// Check for if the packet has been sent too many times
+		if (TimesSent > PacketHandler.maxRetransmissions)
+		{
+			// Remove the packet from the retransmission list thing
+			Logger.Log("Packet exceed max transmissions. Ceasing all retransmissions.");
+			PacketHandler.RetransmissionPacketQueue.Remove(this);
+		}
+    }
+}
+
+
+
 
 // Connection packet
 class ConnectionPacket : Packet
@@ -73,11 +117,11 @@ class ConnectionPacket : Packet
 	}
 
 	// Send the packet
-	public void Send(IPEndPoint client)
+	public override void Send()
 	{
 		string packet = $"{Type}{TransmissionType}";
 		Console.WriteLine(packet);
 
-		SendAcknowledgementPacket(packet, client);
+		SendAcknowledgementPacket(packet, Client);
 	}
 }

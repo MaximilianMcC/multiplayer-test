@@ -8,6 +8,13 @@ using System.Text;
 
 class PacketHandler
 {
+	// Event queues
+	// TODO: Play around with these values. idk the gpt gave them
+	public const uint retransmissionTimeout = 350; //? Milliseconds 
+	public const uint maxRetransmissions = 15;
+	public static List<RetransmissionPacket> RetransmissionPacketQueue = new List<RetransmissionPacket>();
+
+
 	
 	// Add a new player to the game
 	public static void ConnectPlayer(string[] packet, IPEndPoint client)
@@ -21,54 +28,7 @@ class PacketHandler
 
 		// Send them back a packet with their new UUID
 		ConnectionPacket connectionPacket = new ConnectionPacket();
-		connectionPacket.Send(client);
+		connectionPacket.Send();
 	}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	// Send an acknowledgement packet
-	// Where a response must be sent by the client. If one isn't sent then
-	// the packet will be retransmitted until received successfully
-
-
-}
-
-
-
-
-// TODO: Put in another file!!
-struct RetransmissionPacket
-{
-	public IPEndPoint Client { get; private set; }
-
-	public string Content { get; private set; }
-	public string Guid { get; private set; } //? pronounced "goo ID" btw
-
-	public uint TimesSent { get; set; }
-	public DateTime SendTime { get; set; }
-
-	public RetransmissionPacket(string packet, string guid, IPEndPoint client)
-	{
-		//! SendTime might be a bit delayed by a few ms
-		SendTime = DateTime.Now;
-		Client = client;
-		Content = packet += $",{guid}";
-		Guid = guid;
-	}
 }
