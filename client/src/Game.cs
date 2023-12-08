@@ -15,7 +15,9 @@ class Game
 
 	private static void Start()
 	{
-
+		// Connect to the server
+		// TODO: Make a Network.Init() method or something
+		Networking.ConnectToServer(Program.LaunchArgs.Ip, Program.LaunchArgs.Port);
 	}
 
 
