@@ -1,20 +1,16 @@
 ﻿class Program
 {
-	public static dynamic LaunchArgs;
-
 	public static void Main(string[] args)
 	{
 		Console.Title = "Client";
 
+		// Parse all of the arguments
+		LaunchArgsManager.ParseArguments(args);
 
-		LaunchArgs = LaunchArgsManager.GetArguments(args);
+		// Print the provided ip and port
+		Console.WriteLine(LaunchArgsManager.Get("ip"));
+		Console.WriteLine(LaunchArgsManager.Get("port"));
 
-		// TODO: Don't do manually
-		LaunchArgs.Ip = "127.0.0.1";
-		LaunchArgs.Port = "12345";
-
-		Console.WriteLine(LaunchArgs.Ip);
-		Console.WriteLine(LaunchArgs.Port);
 		Game.Run();
 
 	}

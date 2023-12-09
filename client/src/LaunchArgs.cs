@@ -2,46 +2,52 @@ using System.Dynamic;
 
 class LaunchArgsManager
 {
-	// All of the arguments
-	public static List<LaunchArg> launchArguments = new List<LaunchArg>()
-	{
-		new LaunchArg("ip", true),
-		new LaunchArg("port", true)
-	};
+	// TODO: Way to have required arguments
 
-	private Dictionary<string, string> parsedArguments = new Dictionary<string, string>();
+	private static Dictionary<string, string> parsedArguments = new Dictionary<string, string>();
 
 	// Parse all of the arguments
+	// TODO: Support other data types
+	//? Argument format is `-myarg myValue` btw!!
 	public static void ParseArguments(string[] args)
 	{
-		// Argument format is this:
-		// `-myarg myValue`
+		// Temporary key/values
+		string key = "";
+		string value = "";
+
+		// Loop through all of the arguments
+		for (int i = 0; i < args.Length; i++)
+		{
+			// Check for if we are looking at a key, or a value
+			if (args[i].StartsWith('-')) key = args[i].Trim();
+			else value = args[i].Trim();
+			
+			// Check for if a complete pair has been gotten (key and value)
+			if (key != "" && value != "")
+			{
+				// Add the key and value to the list of parsed arguments
+				parsedArguments.Add(key.Replace("-", ""), value);
+
+				// Reset them for the next argument
+				key = "";
+				value = "";
+			}
+		}
+
+		// TODO: Check for if all of the required arguments have been provided
 	}
 
 	// Get an argument from the list of set arguments here
-	public static string Get(LaunchArg argument)
+	public static string? Get(string argumentName)
 	{
-		string data = "";
+		// Loop through every parsed argument until we find the correct one
+		// TODO: Could entirely skip the loop and just use `parsedArguments[argument.Key]`
+		foreach (KeyValuePair<string, string> currentArgument in parsedArguments)
+		{
+			if (currentArgument.Key == argumentName) return parsedArguments[argumentName];
+		}
 
-
-
-		return data;
-	}
-
-
-}
-
-// Launch argument template thingy
-//! idk if its correct to use struct here (it works though!!)
-// TODO: Add in a way to choose datatype
-struct LaunchArg
-{
-	public string Key { get; private set; }
-	public bool Required { get; private set; }
-
-	public LaunchArg(string key, bool required = false)
-	{
-		Key = key;
-		Required = required;
+		// Return null if there was no argument given
+		return null;
 	}
 }
