@@ -17,21 +17,8 @@ class Networking
 		// Create the server endpoint
 		server = new IPEndPoint(ip, port);
 
-		// Ping the server to check for if its online and we entered 
-		// the correct ip and port
-		const int PING_TIMEOUT = 1000; //? milliseconds
-		Ping ping = new Ping();
-
-		try
-		{
-			PingReply reply = ping.Send(ip, PING_TIMEOUT);
-			if (reply.Status == IPStatus.Success) Console.WriteLine("blutettoth deveice connected suceusfuy.!!!");
-		}
-		catch (PingException)
-		{
-			Console.WriteLine("Erhmmm i dont think the server is reachable rn (busy)");
-		}
-
-		// TODO: Use .Status enum to get more accurate messages. Cast to string or something
+		// TODO: Somehow ping the server to check for if we have the ip and port correct
+		// TODO: Include port in the ping
+		// TODO: Could just make a random packet called "hi" or something that can be used as a custom type of ping
 	}
 }

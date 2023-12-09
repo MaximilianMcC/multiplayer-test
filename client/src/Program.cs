@@ -9,9 +9,12 @@
 
 		LaunchArgs = LaunchArgsManager.GetArguments(args);
 
+		// TODO: Don't do manually
+		LaunchArgs.Ip = "127.0.0.1";
+		LaunchArgs.Port = "12345";
 
-		Console.WriteLine(LaunchArgs.ip);
-		Console.WriteLine(LaunchArgs.port);
+		Console.WriteLine(LaunchArgs.Ip);
+		Console.WriteLine(LaunchArgs.Port);
 		Game.Run();
 
 	}
