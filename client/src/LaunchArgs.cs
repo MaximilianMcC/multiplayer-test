@@ -1,6 +1,6 @@
 using System.Dynamic;
 
-class LaunchArgsManager
+class LaunchArgs
 {
 	// TODO: Way to have required arguments
 
@@ -38,7 +38,7 @@ class LaunchArgsManager
 	}
 
 	// Get an argument from the list of set arguments here
-	public static string? Get(string argumentName)
+	public static string Get(string argumentName)
 	{
 		// Loop through every parsed argument until we find the correct one
 		// TODO: Could entirely skip the loop and just use `parsedArguments[argument.Key]`

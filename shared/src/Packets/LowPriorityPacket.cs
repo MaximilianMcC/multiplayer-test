@@ -1,8 +1,15 @@
-class LowPriorityPacket : Packet
+public class LowPriorityPacket : Packet
 {
-	public LowPriorityPacket()
+	public LowPriorityPacket(PacketType packetType) : base(packetType)
 	{
 		// Add on the low-priority marker (lp)
-		packetString += "|LP|";
+		PacketString += "|LP|";
+	}
+
+	// Add the packet to a sending queue so that it can be sent
+	// when the next network tick rolls around
+	public override void AddToSendingQueue()
+	{
+		NetworkManager.LowPriorityQueue.Add(this);
 	}
 }

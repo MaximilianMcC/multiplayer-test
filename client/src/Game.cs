@@ -16,8 +16,10 @@ class Game
 	private static void Start()
 	{
 		// Connect to the server
-		// TODO: Make a Network.Init() method or something
-		// Networking.ConnectToServer(Program.LaunchArgs.Ip, Program.LaunchArgs.Port);
+		// TODO: Make a Network.Init() method or something that connects and whatnot
+		Networking.ConnectToServer(LaunchArgs.Get("ip"), LaunchArgs.Get("port"));
+
+		// Make a new player
 	}
 
 
@@ -27,8 +29,8 @@ class Game
 		const int sleepTime = 1000 / networkTicksPerSecond;
 
 		// Receive network stuff
-		NetworkManager.ReceiveHighPriorityPacket();
-		NetworkManager.ReceiveLowPriorityPacket();
+		NetworkManager.ReceiveHighPriorityPackets();
+		NetworkManager.ReceiveLowPriorityPackets();
 	
 		// TODO: Update game 
 		Console.WriteLine("d");
@@ -36,7 +38,6 @@ class Game
 		// Send network stuff
 		NetworkManager.SendHighPriorityPacket();
 		NetworkManager.SendLowPriorityPacket();
-
 
 		// Sleep the thread to emulate waiting for ticks
 		// TODO: If add gui then don't sleep

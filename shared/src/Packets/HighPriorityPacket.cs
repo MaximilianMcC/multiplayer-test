@@ -1,8 +1,8 @@
-class HighPriorityPacket : Packet
+public class HighPriorityPacket : Packet
 {
 	public string uuid { get; private set; }
 
-	public HighPriorityPacket()
+	public HighPriorityPacket(PacketType packetType) : base(packetType)
 	{
 		// Generate a UUID to identify the packet
 		// TODO: Use the whole UUID. Only using the timestamp right now
@@ -10,6 +10,13 @@ class HighPriorityPacket : Packet
 		uuid = Guid.NewGuid().ToString().Split('-')[0];
 
 		// Add on the high-priority marker (hp)
-		packetString += "|HP|";
+		PacketString += "|HP|";
+	}
+
+	// Add the packet to a sending queue so that it can be sent
+	// when the next network tick rolls around
+	public override void AddToSendingQueue()
+	{
+		NetworkManager.HighPriorityQueue.Add(this);
 	}
 }

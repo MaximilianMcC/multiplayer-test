@@ -21,4 +21,18 @@ class Networking
 		// TODO: Include port in the ping
 		// TODO: Could just make a random packet called "hi" or something that can be used as a custom type of ping
 	}
+
+	// Register/connect the player to the server
+	// Returns the UUID given back by the server
+	public static string RegisterPlayer(string username)
+	{
+		// Make a new packet asking for the player to join
+		HighPriorityPacket packet = new HighPriorityPacket(PacketType.CLIENT_CONNECTION_REQUEST);
+		packet.AddData(username);
+		packet.AddToSendingQueue();
+
+		
+
+		return "uuid trust fr";
+	}
 }
