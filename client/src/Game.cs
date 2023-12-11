@@ -29,8 +29,8 @@ class Game
 		const int sleepTime = 1000 / networkTicksPerSecond;
 
 		// Receive network stuff
-		NetworkManager.ReceiveHighPriorityPackets();
-		NetworkManager.ReceiveLowPriorityPackets();
+		NetworkManager.ReceiveHighPriorityPacket();
+		NetworkManager.ReceiveLowPriorityPacket();
 	
 		// TODO: Update game 
 		Console.WriteLine("d");

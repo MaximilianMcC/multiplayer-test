@@ -11,7 +11,7 @@
 
 }
 
-public enum Handshake
+public enum HandshakeStage
 {
 	SYNCHRONIZATION,
 	ACKNOWLEDGEMENT

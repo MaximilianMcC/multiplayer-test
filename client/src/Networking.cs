@@ -1,5 +1,4 @@
 using System.Net;
-using System.Net.NetworkInformation;
 using System.Net.Sockets;
 
 class Networking
@@ -30,8 +29,6 @@ class Networking
 		HighPriorityPacket packet = new HighPriorityPacket(PacketType.CLIENT_CONNECTION_REQUEST);
 		packet.AddData(username);
 		packet.AddToSendingQueue();
-
-		
 
 		return "uuid trust fr";
 	}
