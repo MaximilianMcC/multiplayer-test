@@ -1,46 +1,42 @@
+using Raylib_cs;
+
 class Game
 {
+	private static Texture2D freeman;
+
 	public static void Run()
 	{
-		// I am not going to be focusing on graphics or anything here. This is just 
-		// so that I can learn how to do the networking aspect. Later on graphics
-		// will be added, but only when they are required and a part of the networking
+		// Setup raylib
+		Raylib.InitWindow(800, 800, "holey smokes");
+		Raylib.SetTargetFPS(60);
 
 		Start();
-		while (true)
+		while (!Raylib.WindowShouldClose())
 		{
 			Update();
+			Render();
 		}
+		Raylib.UnloadTexture(freeman);
+		Raylib.CloseWindow();
 	}
 
 	private static void Start()
 	{
-		// Connect to the server
-		// TODO: Make a Network.Init() method or something that connects and whatnot
-		Networking.ConnectToServer(LaunchArgs.Get("ip"), LaunchArgs.Get("port"));
-
-		// Make a new player
+		freeman = Raylib.LoadTexture("./assets/freeman.png");
 	}
-
 
 	private static void Update()
 	{
-		const int networkTicksPerSecond = 20;
-		const int sleepTime = 1000 / networkTicksPerSecond;
 
-		// Receive network stuff
-		NetworkManager.ReceiveHighPriorityPacket();
-		NetworkManager.ReceiveLowPriorityPacket();
-	
-		// TODO: Update game 
-		Console.WriteLine("d");
+	}
 
-		// Send network stuff
-		NetworkManager.SendHighPriorityPacket();
-		NetworkManager.SendLowPriorityPacket();
+	private static void Render()
+	{
+		Raylib.BeginDrawing();
+		Raylib.ClearBackground(new Color(0, 0, 255, 255));
 
-		// Sleep the thread to emulate waiting for ticks
-		// TODO: If add gui then don't sleep
-		Thread.Sleep(sleepTime);
+		Raylib.DrawTexture(freeman, 0, 0, Color.White);
+
+		Raylib.EndDrawing();
 	}
 }

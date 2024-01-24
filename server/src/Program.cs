@@ -2,8 +2,14 @@
 {
 	public static void Main(string[] args)
 	{
-		Console.Title = "Server";
+		// crap heading thing
+		Console.Title = "Server test";
+		Console.WriteLine("Multiplayer Testing Server\n------------------------------------------\n\n");
+		
 
-		Console.WriteLine(PacketType.CLIENT_DISCONNECTING);
+		while (true)
+		{
+			
+		}
 	}
 }
