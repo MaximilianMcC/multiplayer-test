@@ -12,6 +12,7 @@ class Button
 	private const float fontSpacing = fontSize / 10;
 	private const float padding = 15;
 	private const float padding2 = padding * 2;
+	private const float paddingH = padding / 2;
 	private const float decorationSize = 3f;
 
 	private readonly Color backgroundColor = new Color(70, 75, 50, 255);
@@ -28,7 +29,7 @@ class Button
 		// Measure out the size for the button
 		Vector2 textSize = Raylib.MeasureTextEx(Game.Font, Label, fontSize, fontSpacing);
 		float width = padding2 + padding2 + textSize.X;
-		float height = padding2 + textSize.Y;
+		float height = padding + paddingH + textSize.Y;
 
 		// Set the shape
 		Shape = new Rectangle(position.X, position.Y, width, height);

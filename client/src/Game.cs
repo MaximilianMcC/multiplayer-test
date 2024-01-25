@@ -30,7 +30,8 @@ class Game
 		// Load in all the crap
 		freeman = Raylib.LoadTexture("./assets/freeman.png");
 		Font = Raylib.LoadFont("./assets/trebucbd.ttf");
-		
+		Raylib.SetTextureFilter(Font.Texture, TextureFilter.Bilinear);
+
 		// Buttons stuff
 		buttons = new List<Button>();
 		buttons.Add(new Button("Send handshake packet", new Vector2(10, 10)));
