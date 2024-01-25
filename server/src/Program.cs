@@ -10,7 +10,7 @@ class Program
 	{
 		// crap heading thing
 		Console.Title = "Server test";
-		Console.WriteLine("Multiplayer Testing Server\n------------------------------------------\n\n");
+		Console.WriteLine("Multiplayer Testing Server (pideona)\n------------------------------------------\n\n");
 
 		// Make the actual server
 		server = new UdpClient(54321);
