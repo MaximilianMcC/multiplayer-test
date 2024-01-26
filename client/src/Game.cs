@@ -20,6 +20,7 @@ class Game
 			Update();
 			Render();
 		}
+		
 		Raylib.UnloadTexture(freeman);
 		Raylib.UnloadFont(Font);
 		Raylib.CloseWindow();
@@ -33,8 +34,10 @@ class Game
 		Raylib.SetTextureFilter(Font.Texture, TextureFilter.Bilinear);
 
 		// Buttons stuff
-		buttons = new List<Button>();
-		buttons.Add(new Button("Send handshake packet", new Vector2(10, 10)));
+		buttons = new List<Button>()
+		{
+			new Button("Send handshake packet", new Vector2(10, 10), Test)
+		};
 	}
 
 	private static void Update()
@@ -57,5 +60,10 @@ class Game
 		}
 
 		Raylib.EndDrawing();
+	}
+
+	private static void Test()
+	{
+		Console.WriteLine("test (works)");
 	}
 }

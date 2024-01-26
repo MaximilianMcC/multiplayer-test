@@ -6,7 +6,8 @@ class Button
 {
 	public string Label { get; set; }
 	public Rectangle Shape { get; set; }
-	public bool BeingHoveredOver;
+	public Action OnClick { get; private set; }
+	public bool BeingHoveredOver { get; private set; }
 
 	private const float fontSize = 30;
 	private const float fontSpacing = fontSize / 10;
@@ -19,12 +20,15 @@ class Button
 	private readonly Color highlightColor = new Color(133, 133, 111, 255);
 	private readonly Color shadowColor = new Color(60, 60, 40, 255);
 	private readonly Color textColor = new Color(185, 185, 170, 255);
-	private readonly Color hoverOverlayColor = new Color(0, 0, 0, 64);
+	private readonly Color hoverOverlayColor = new Color(0, 0, 0, 16);
 
-	public Button(string label, Vector2 position)
+	public Button(string label, Vector2 position, Action onClick)
 	{
 		// Set the label
 		Label = label;
+
+		// Set the click action
+		OnClick = onClick;
 
 		// Measure out the size for the button
 		Vector2 textSize = Raylib.MeasureTextEx(Game.Font, Label, fontSize, fontSpacing);
@@ -56,11 +60,9 @@ class Button
 
 
 
-		// Check for if the user has clicked on the button
-		if (Raylib.IsMouseButtonPressed(MouseButton.Left))
-		{
-			Debug.WriteLine("Clicked button");
-		}
+		// Check for if the user has clicked on the
+		// button, then run the click action
+		if (Raylib.IsMouseButtonPressed(MouseButton.Left)) OnClick.Invoke();
 	}
 
 	// TODO: Make it look like win95 button, or use black mesa green
@@ -81,9 +83,6 @@ class Button
 		Raylib.DrawTextEx(Game.Font, Label, (Shape.Position + new Vector2(padding2, padding)), fontSize, fontSpacing, textColor);
 
 		// If the button is being hovered over, darken it a little bit
-		if (BeingHoveredOver)
-		{
-			Raylib.DrawRectangleRec(Shape, hoverOverlayColor);
-		}
+		if (BeingHoveredOver) Raylib.DrawRectangleRec(Shape, hoverOverlayColor);
 	}
 }
