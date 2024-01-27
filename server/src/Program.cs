@@ -10,6 +10,7 @@ class Program
 	{
 		// crap heading thing
 		Console.Title = "Server test";
+		Console.ForegroundColor = ConsoleColor.DarkYellow;
 		Console.WriteLine("Multiplayer Testing Server (pideona)\n------------------------------------------\n\n");
 
 		// Make the actual server
@@ -19,6 +20,7 @@ class Program
 		IPEndPoint clientEndpoint = new IPEndPoint(IPAddress.Any, 0);
 
 		// Listen for incoming requests
+		Console.WriteLine("Listening for the incoming packets rn");
 		while (true)
 		{
 			byte[] incomingBytes = server.Receive(ref clientEndpoint);

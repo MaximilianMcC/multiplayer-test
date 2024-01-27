@@ -28,6 +28,9 @@ class Game
 
 	private static void Start()
 	{
+		// Connect to the server
+		Networking.ConnectToServer(Program.Args[0]);
+
 		// Load in all the crap
 		freeman = Raylib.LoadTexture("./assets/freeman.png");
 		Font = Raylib.LoadFont("./assets/trebucbd.ttf");
@@ -36,7 +39,8 @@ class Game
 		// Buttons stuff
 		buttons = new List<Button>()
 		{
-			new Button("Send handshake packet", new Vector2(10, 10), Test)
+			new Button("Send normal packet", new Vector2(10, 10), (() => Networking.SendNormalPacket("Hello, world!"))),
+			new Button("Send handshajke packet", new Vector2(10, 80), (() => Networking.SendHandshakePacket("Hello, world!")))
 		};
 	}
 
@@ -60,10 +64,5 @@ class Game
 		}
 
 		Raylib.EndDrawing();
-	}
-
-	private static void Test()
-	{
-		Console.WriteLine("test (works)");
 	}
 }

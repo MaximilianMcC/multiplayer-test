@@ -9,37 +9,20 @@ class Packet
 		// Handle the packet header
 		if (data[0] >= 1)
 		{
-			// Get the handshake stage
-			HandshakeStage stage = (HandshakeStage)data[1];
-
-			// Get the handshake guid to identify the packet
-			//? 16 bytes
-			string guid = string.Join("", data[3..19]);
-
-			Debug.WriteLine(guid);
+			// Get the sequence number
+			int sequenceNumber = data[1];
+			Handshake = new HandshakeInfo(sequenceNumber);
 		}
 		else Handshake = null;
 	}
+}
 
+struct HandshakeInfo
+{
+	public int SequenceNumber;
 
-
-
-
-	public override string ToString()
+	public HandshakeInfo(int sequenceNumber)
 	{
-		return "packet!!!";
+		SequenceNumber = sequenceNumber;
 	}
-}
-
-class HandshakeInfo
-{
-	
-}
-
-// TODO: Use full names
-enum HandshakeStage
-{
-	SYN = 0,
-	SYN_ACK = 1,
-	ACK = 2
 }
