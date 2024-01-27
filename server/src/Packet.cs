@@ -2,26 +2,28 @@ using System.Diagnostics;
 
 class Packet
 {
-	public HandshakeInfo? Handshake;
+	public Handshake? Handshake;
 
 	public Packet(byte[] data)
 	{
-		// Handle the packet header
+		// Check for if its a handshake packet or not
 		if (data[0] >= 1)
 		{
 			// Get the sequence number
 			int sequenceNumber = data[1];
-			Handshake = new HandshakeInfo(sequenceNumber);
+			Handshake = new Handshake(sequenceNumber);
 		}
 		else Handshake = null;
 	}
 }
 
-struct HandshakeInfo
+struct Handshake
 {
-	public int SequenceNumber;
+	public byte SequenceNumber;
+	public int Timeouts;
+	public DateTime lastTransmissionTime;
 
-	public HandshakeInfo(int sequenceNumber)
+	public Handshake(byte sequenceNumber)
 	{
 		SequenceNumber = sequenceNumber;
 	}

@@ -4,17 +4,33 @@ using System.Net.Sockets;
 
 class Program
 {
-	private static UdpClient server;
+	public static UdpClient Server;
 
 	public static void Main(string[] args)
 	{
 		// crap heading thing
 		Console.Title = "Server test";
 		Console.ForegroundColor = ConsoleColor.DarkYellow;
-		Console.WriteLine("Multiplayer Testing Server (pideona)\n------------------------------------------\n\n");
+		Console.WriteLine(@"        _     _                        ");
+		Console.WriteLine(@"       (_)   | |                       ");
+		Console.WriteLine(@"  _ __  _  __| | ___  ___  _ __   __ _ ");
+		Console.WriteLine(@" | '_ \| |/ _` |/ _ \/ _ \| '_ \ / _` |");
+		Console.WriteLine(@" | |_) | | (_| |  __/ (_) | | | | (_| |");
+		Console.WriteLine(@" | .__/|_|\__,_|\___|\___/|_| |_|\__,_|");
+		Console.WriteLine(@" | |                                   ");
+		Console.WriteLine(@" |_|       UDP SERVER                  ");
+		Console.WriteLine("------------------------------------------------------------\n");
+
+
+		// Check for if the correct args were supplied
+		if (args.Length < 1)
+		{
+			Console.WriteLine("Insufficient arguments provided🤬\nYou are missing the server port. Provide it as a string.\nExample: server.exe 12345");
+			return;
+		}
 
 		// Make the actual server
-		server = new UdpClient(54321);
+		Server = new UdpClient(int.Parse(args[0]));
 
 		// Listen to any client, using any ip on any port
 		IPEndPoint clientEndpoint = new IPEndPoint(IPAddress.Any, 0);
@@ -23,8 +39,11 @@ class Program
 		Console.WriteLine("Listening for the incoming packets rn");
 		while (true)
 		{
-			byte[] incomingBytes = server.Receive(ref clientEndpoint);
-			Packet request = new Packet(incomingBytes);
+			// Get the incoming packet
+			byte[] incomingPacket = Server.Receive(ref clientEndpoint);
+			Packet request = new Packet(incomingPacket);
+
+			// Handle it
 			HandleRequest(request);
 		}
 	}
@@ -38,6 +57,9 @@ class Program
 		{
 			// Handshake packet
 			Console.WriteLine("received handshake packet");
+
+			//? .Value being used here because its a struct
+			Networking.AcknowledgeHandshake(request.Handshake.Value);
 		}
 		else
 		{

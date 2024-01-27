@@ -11,7 +11,7 @@ class Networking
 
 	// Handshake stuff
 	// TODO: Somehow decrease the sequenceNumber. Should be fine, but overtime it will add up and become a giant number
-	private static int nextAvailableSequenceNumber = 0;
+	private static byte nextAvailableSequenceNumber = 0;
 
 
 
@@ -51,15 +51,11 @@ class Networking
 
 	public static void SendHandshakePacket(string content)
 	{
-		// Get the sequence number used to identify the packet
-		int sequenceNumber = nextAvailableSequenceNumber;
-		nextAvailableSequenceNumber++;
-
 		// Create the packet header
 		// TODO: Allocate 2 bytes or maybe a little more for the sequence number
 		byte[] packetHeader = new byte[2];
 		packetHeader[0] = 1;
-		packetHeader[1] = (byte)sequenceNumber;
+		packetHeader[1] = GetSequenceNumber();
 
 		// Encode the content into bytes for sending
 		byte[] data = Encoding.ASCII.GetBytes(content);
@@ -69,6 +65,23 @@ class Networking
 		// TODO: Retransmit the packet if no response within a reasonable time
 		byte[] packet = packetHeader.Concat(data).ToArray();
 		client.Send(packet, packet.Length, server);
+	}
+
+
+
+	private static byte GetSequenceNumber()
+	{
+		// Get the number
+		byte sequenceNumber = nextAvailableSequenceNumber;
+
+		// Increase the number, and loop back to 0 to avoid
+		// dedicating another byte to storing it
+		//! Might need to check for >= but idk
+		nextAvailableSequenceNumber++;
+		if (nextAvailableSequenceNumber > byte.MaxValue) nextAvailableSequenceNumber = 0;
+
+		// Return the number
+		return sequenceNumber;
 	}
 }
 
