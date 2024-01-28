@@ -5,6 +5,7 @@ using System.Net.Sockets;
 class Program
 {
 	public static UdpClient Server;
+	public static IPEndPoint ClientEndpoint;
 
 	public static void Main(string[] args)
 	{
@@ -29,18 +30,28 @@ class Program
 			return;
 		}
 
-		// Make the actual server
+		// Make the actual server, and listen for any client
 		Server = new UdpClient(int.Parse(args[0]));
+		ClientEndpoint = new IPEndPoint(IPAddress.Any, 0);
 
-		// Listen to any client, using any ip on any port
-		IPEndPoint clientEndpoint = new IPEndPoint(IPAddress.Any, 0);
+		// Listen, and send stuff at the same time
+		Thread listenThread = new Thread(Listen);
+		Thread sendThread = new Thread(Send);
 
+		// Start everything
+		listenThread.Start();
+		sendThread.Start();
+	}
+
+
+	private static void Listen()
+	{
 		// Listen for incoming requests
 		Console.WriteLine("Listening for the incoming packets rn");
 		while (true)
 		{
 			// Get the incoming packet
-			byte[] incomingPacket = Server.Receive(ref clientEndpoint);
+			byte[] incomingPacket = Server.Receive(ref ClientEndpoint);
 			Packet request = new Packet(incomingPacket);
 
 			// Handle it
@@ -48,6 +59,15 @@ class Program
 		}
 	}
 
+	private static void Send()
+	{
+		// Acknowledge handshake requests
+		Console.WriteLine("Ready to start acknowledging packets");
+		while (true)
+		{
+			Networking.AcknowledgeHandshakePackets(ClientEndpoint);
+		}		
+	}
 
 
 	private static void HandleRequest(Packet request)

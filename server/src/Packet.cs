@@ -9,9 +9,8 @@ class Packet
 		// Check for if its a handshake packet or not
 		if (data[0] >= 1)
 		{
-			// Get the sequence number
-			int sequenceNumber = data[1];
-			Handshake = new Handshake(sequenceNumber);
+			// Make the handshake info
+			Handshake = new Handshake(data[1]);
 		}
 		else Handshake = null;
 	}
@@ -21,7 +20,7 @@ struct Handshake
 {
 	public byte SequenceNumber;
 	public int Timeouts;
-	public DateTime lastTransmissionTime;
+	public DateTime LastTransmissionTime;
 
 	public Handshake(byte sequenceNumber)
 	{

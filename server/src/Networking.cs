@@ -23,8 +23,10 @@ class Networking
 	// packet if it has exceeded the timeout
 	public static void AcknowledgeHandshakePackets(IPEndPoint client)
 	{
-		foreach (Handshake handshake in packetsToAcknowledge)
+		for (int i = 0; i < packetsToAcknowledge.Count; i++)
 		{
+			Handshake handshake = packetsToAcknowledge[i];
+
 			// Check for if the packet has had too many timeouts
 			if (handshake.Timeouts > MAX_TIMEOUTS)
 			{
@@ -38,11 +40,21 @@ class Networking
 			// Check for if the packet is due for a retransmission
 			// then send a new one
 			DateTime currentTime = DateTime.Now;
-			if ((currentTime - handshake.lastTransmissionTime).TotalSeconds > TIMEOUT)
+			if ((currentTime - handshake.LastTransmissionTime).TotalSeconds > TIMEOUT)
 			{
+				// Send the acknowledgement packet back to the client
 				byte[] acknowledgementPacket = new byte[] { handshake.SequenceNumber };
 				Program.Server.Send(acknowledgementPacket, acknowledgementPacket.Length, client);
+
+				// Reset the transmission time so it can be measured again
+				handshake.LastTransmissionTime = DateTime.Now;
+				handshake.Timeouts++;
+				Console.WriteLine($"Sent acknowledgement packet (last retransmission time: {handshake.LastTransmissionTime})");
 			}
+
+			// Update the handshake
+			// TODO: Don't do this way. Seems very off
+			packetsToAcknowledge[i] = handshake;
 		}
 	}
 }
