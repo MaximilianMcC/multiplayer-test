@@ -1,14 +1,4 @@
-![freeman](https://i.imgur.com/Ca8X2mq.png)
+# Multiplayer Test
+Used for testing multiplayer stuff. More specifically, testing UDP packet retransmission.
 
----
-# Normal packet header
-| Handshake packet |
-|---|
-| `false` |
-
-# Handshake packet header
-<!-- TODO: See if its same amount of bytes to just encode as string -->
-| Handshake packet | handshake stage | handshake guid |
-|---|---|---|
-| `true` | SYN = `0`, ACK = `1`, SYN-ACK = `2` | `0f9bcaca-6474-4a02-82d4-9419e2e14f12` (guid)|
-| 1 byte| 1 byte | 16 bytes |
+Also ik its bad to have client and server in same workspace/project but for now its all good
