@@ -22,28 +22,33 @@ class Logger
 		identifier = identifierName;
 	}
 
-	public void Info(object? content)
+
+	public void Info(object content)
 	{
-		Console.WriteLine($"{GetHeader()}{white}({blue}INFO{white})\t{blue}{content}");
+		LogMessage("INFO", blue, content);
 	}
 
-	public void Event(object? content)
+	public void Event(object content)
 	{
-		Console.WriteLine($"{GetHeader()}{white}({yellow}EVENT{white})\t{yellow}{content}");
+		LogMessage("EVENT", yellow, content);
 	}
 
-	public void Error(object? content)
+	public void Error(object content)
 	{
-		Console.WriteLine($"{GetHeader()}{white}({red}ERROR{white})\t{red}{content}");
+		LogMessage("ERROR", red, content);
 	}
 
 
-	private string GetHeader()
+	private void LogMessage(string type, string color, object contents)
 	{
 		// Get the time
 		string time = DateTime.Now.ToString("HH:mm:ss:fff");
 
-		// Give back the string
-		return $"{white}[{cyan}{time}{white}] [{magenta}{identifier}{white}] ";
+		// Make the message and print each line
+		// TODO: Make multiple lines for readability
+		foreach (string line in contents.ToString().Split("\n"))
+		{
+			Console.WriteLine($"{white}[{cyan}{time}{white}] [{magenta}{identifier}{white}]\t({color}{type}{white})\t{color}{line}");
+		}
 	}
 }
